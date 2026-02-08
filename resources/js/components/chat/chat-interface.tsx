@@ -1,9 +1,13 @@
 import type { Message, ConversationWithMessages } from '@/types/chat';
 import { useStream } from '@laravel/stream-react';
-import { router } from '@inertiajs/react';
 import { useCallback, useEffect, useState } from 'react';
 import MessageList from './message-list';
 import MessageInput from './message-input';
+
+function getXsrfToken(): string {
+    const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : '';
+}
 
 interface ChatInterfaceProps {
     conversation?: ConversationWithMessages | null;
@@ -19,13 +23,13 @@ export default function ChatInterface({ conversation }: ChatInterfaceProps) {
         conversation_id?: number;
         model?: string;
     }>('/chat/stream', {
+        csrfToken: '',
+        headers: { 'X-XSRF-TOKEN': getXsrfToken() },
         onResponse: (response) => {
-            // Capture the conversation ID from response header when a new conversation is created
             const newId = response.headers.get('X-Conversation-Id');
             if (newId && !conversationId) {
                 const id = parseInt(newId, 10);
                 setConversationId(id);
-                // Update URL without full page reload
                 window.history.replaceState({}, '', `/chat/${id}`);
             }
         },

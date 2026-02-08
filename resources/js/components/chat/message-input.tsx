@@ -11,9 +11,12 @@ interface MessageInputProps {
 }
 
 const models = [
-    { value: 'claude-haiku-3-5-20241022', label: 'Haiku 3.5' },
-    { value: 'claude-sonnet-4-5-20250929', label: 'Sonnet 4.5' },
-    { value: 'claude-opus-4-6', label: 'Opus 4.6' },
+    { value: 'claude-haiku-3-5-20241022', label: 'Haiku 3.5', group: 'Anthropic' },
+    { value: 'claude-sonnet-4-5-20250929', label: 'Sonnet 4.5', group: 'Anthropic' },
+    { value: 'claude-opus-4-6', label: 'Opus 4.6', group: 'Anthropic' },
+    { value: 'gpt-4o-mini', label: 'GPT-4o Mini', group: 'OpenAI' },
+    { value: 'gpt-4o', label: 'GPT-4o', group: 'OpenAI' },
+    { value: 'o3-mini', label: 'o3 Mini', group: 'OpenAI' },
 ];
 
 export default function MessageInput({ onSend, onCancel, disabled, isStreaming, model, onModelChange }: MessageInputProps) {
@@ -89,8 +92,12 @@ export default function MessageInput({ onSend, onCancel, disabled, isStreaming, 
                             onChange={e => onModelChange(e.target.value)}
                             className="rounded-lg border bg-muted/50 px-2 py-1 text-xs outline-none"
                         >
-                            {models.map(m => (
-                                <option key={m.value} value={m.value}>{m.label}</option>
+                            {Object.entries(Object.groupBy(models, m => m.group)).map(([group, items]) => (
+                                <optgroup key={group} label={group}>
+                                    {items!.map(m => (
+                                        <option key={m.value} value={m.value}>{m.label}</option>
+                                    ))}
+                                </optgroup>
                             ))}
                         </select>
                         <span className="text-muted-foreground text-xs">Shift+Enter for new line</span>

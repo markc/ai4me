@@ -83,14 +83,16 @@ class ChatController extends Controller
             'assistant' => new AssistantMessage($m['content']),
         })->all();
 
-        return response()->stream(function () use ($conversation, $prismMessages, $model) {
+        $provider = $this->providerForModel($model);
+
+        return response()->stream(function () use ($conversation, $prismMessages, $model, $provider) {
             $fullResponse = '';
             $inputTokens = null;
             $outputTokens = null;
 
             try {
                 $stream = Prism::text()
-                    ->using(Provider::Anthropic, $model)
+                    ->using($provider, $model)
                     ->withSystemPrompt('You are a helpful AI assistant. Be concise, accurate, and friendly. Format responses with markdown when appropriate.')
                     ->withMessages($prismMessages)
                     ->asStream();
@@ -148,5 +150,15 @@ class ChatController extends Controller
         $conversation->delete();
 
         return redirect()->route('chat.index');
+    }
+
+    private function providerForModel(string $model): Provider
+    {
+        return match (true) {
+            str_starts_with($model, 'gpt-'),
+            str_starts_with($model, 'o1-'),
+            str_starts_with($model, 'o3-') => Provider::OpenAI,
+            default => Provider::Anthropic,
+        };
     }
 }
