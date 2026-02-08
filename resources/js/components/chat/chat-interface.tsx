@@ -124,26 +124,29 @@ export default function ChatInterface({ conversation, templates }: ChatInterface
     }, [messages, conversationId, model, systemPrompt, pendingFiles, send]);
 
     return (
-        <div className="flex h-full flex-col">
+        <div className="relative h-full">
             <MessageList
                 messages={messages}
                 streamingContent={isStreaming ? data : undefined}
                 isStreaming={isStreaming}
             />
-            <MessageInput
-                onSend={handleSend}
-                onCancel={cancel}
-                disabled={isFetching}
-                isStreaming={isStreaming}
-                model={model}
-                onModelChange={setModel}
-                systemPrompt={systemPrompt}
-                onSystemPromptChange={setSystemPrompt}
-                templates={templates}
-                pendingFiles={pendingFiles}
-                onFilesSelected={handleFilesSelected}
-                onRemoveFile={handleRemoveFile}
-            />
+            <div className="absolute bottom-0 left-0 right-0">
+                <div className="pointer-events-none h-8 bg-gradient-to-t from-background to-transparent" />
+                <MessageInput
+                    onSend={handleSend}
+                    onCancel={cancel}
+                    disabled={isFetching}
+                    isStreaming={isStreaming}
+                    model={model}
+                    onModelChange={setModel}
+                    systemPrompt={systemPrompt}
+                    onSystemPromptChange={setSystemPrompt}
+                    templates={templates}
+                    pendingFiles={pendingFiles}
+                    onFilesSelected={handleFilesSelected}
+                    onRemoveFile={handleRemoveFile}
+                />
+            </div>
         </div>
     );
 }

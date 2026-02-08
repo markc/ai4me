@@ -19,7 +19,7 @@ function ChatPage() {
         <>
             <Head title={title} />
             <AppLayout noPadding>
-                <div className="flex h-[calc(100vh-var(--topnav-height))]">
+                <div className="flex h-full">
                     <ConversationSidebar
                         conversations={conversations}
                         currentId={conversation?.id}

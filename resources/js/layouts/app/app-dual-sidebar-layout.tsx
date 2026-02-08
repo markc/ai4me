@@ -9,14 +9,14 @@ function LayoutContent({ children, noPadding }: { children: ReactNode; noPadding
     const { left, right } = useTheme();
 
     return (
-        <div className="min-h-screen bg-background text-foreground">
+        <div className={`bg-background text-foreground ${noPadding ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
             <TopNav />
             <LeftSidebar />
             <RightSidebar />
             <Overlay />
 
             <main
-                className={`sidebar-slide mt-[var(--topnav-height)] min-h-[calc(100vh-var(--topnav-height))] ${noPadding ? '' : 'p-4'}`}
+                className={`sidebar-slide mt-[var(--topnav-height)] ${noPadding ? 'h-[calc(100vh-var(--topnav-height))] overflow-hidden' : 'min-h-[calc(100vh-var(--topnav-height))] p-4'}`}
                 style={{
                     marginInlineStart: left.pinned ? 'var(--sidebar-width)' : undefined,
                     marginInlineEnd: right.pinned ? 'var(--sidebar-width)' : undefined,
