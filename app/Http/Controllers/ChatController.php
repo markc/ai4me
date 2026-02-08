@@ -158,6 +158,7 @@ class ChatController extends Controller
             str_starts_with($model, 'gpt-'),
             str_starts_with($model, 'o1-'),
             str_starts_with($model, 'o3-') => Provider::OpenAI,
+            str_starts_with($model, 'gemini-') => Provider::Gemini,
             default => Provider::Anthropic,
         };
     }

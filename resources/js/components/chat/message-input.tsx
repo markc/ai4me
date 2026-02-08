@@ -17,6 +17,9 @@ const models = [
     { value: 'gpt-4o-mini', label: 'GPT-4o Mini', group: 'OpenAI' },
     { value: 'gpt-4o', label: 'GPT-4o', group: 'OpenAI' },
     { value: 'o3-mini', label: 'o3 Mini', group: 'OpenAI' },
+    { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash', group: 'Google' },
+    { value: 'gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash Lite', group: 'Google' },
+    { value: 'gemini-2.5-pro-preview-06-05', label: 'Gemini 2.5 Pro', group: 'Google' },
 ];
 
 export default function MessageInput({ onSend, onCancel, disabled, isStreaming, model, onModelChange }: MessageInputProps) {
