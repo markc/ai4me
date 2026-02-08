@@ -16,6 +16,8 @@ type ThemeState = {
 };
 
 type ThemeContextValue = ThemeState & {
+    noPadding: boolean;
+    setNoPadding: (value: boolean) => void;
     toggleTheme: () => void;
     setScheme: (scheme: ColorScheme) => void;
     toggleSidebar: (side: 'left' | 'right') => void;
@@ -84,6 +86,7 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
     const [state, setState] = useState<ThemeState>(loadState);
+    const [noPadding, setNoPadding] = useState(false);
 
     // Apply theme and scheme to DOM on mount and changes
     useEffect(() => {
@@ -150,7 +153,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }, []);
 
     return (
-        <ThemeContext.Provider value={{ ...state, toggleTheme, setScheme, toggleSidebar, pinSidebar, closeSidebars }}>
+        <ThemeContext.Provider value={{ ...state, noPadding, setNoPadding, toggleTheme, setScheme, toggleSidebar, pinSidebar, closeSidebars }}>
             {children}
         </ThemeContext.Provider>
     );

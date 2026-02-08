@@ -1,10 +1,9 @@
-import { Head, useForm, usePage, router } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
+import { Deferred, Head, useForm, usePage, router } from '@inertiajs/react';
 import type { SystemPromptTemplate } from '@/types/chat';
 import { type ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/data-table/data-table';
 import { useState } from 'react';
-import { MessageSquare, Hash, Coins, Cpu, Pencil, Trash2, Plus, Check, X } from 'lucide-react';
+import { MessageSquare, Hash, Coins, Cpu, Pencil, Trash2, Plus, Check, X, Loader2 } from 'lucide-react';
 
 type CostByModel = {
     model: string;
@@ -14,15 +13,17 @@ type CostByModel = {
     cost: number;
 };
 
-type DashboardProps = {
-    stats: {
-        conversations: number;
-        messages: number;
-        input_tokens: number;
-        output_tokens: number;
-        total_cost: number;
-    };
+type DashboardStats = {
+    conversations: number;
+    messages: number;
+    input_tokens: number;
+    output_tokens: number;
+    total_cost: number;
     costByModel: CostByModel[];
+};
+
+type DashboardProps = {
+    stats: DashboardStats;
     providers: Record<string, { name: string; configured: boolean }>;
     settings: { default_model: string; default_system_prompt: string };
     templates: SystemPromptTemplate[];
@@ -204,8 +205,68 @@ function TemplateManager({ templates: initialTemplates }: { templates: SystemPro
     );
 }
 
+function StatsContent() {
+    const { stats } = usePage<{ props: DashboardProps }>().props as unknown as DashboardProps;
+
+    return (
+        <>
+            {/* Stats Row */}
+            <div className="grid gap-4 md:grid-cols-4">
+                <div className="rounded-xl border p-6">
+                    <div className="flex items-center gap-2 mb-2">
+                        <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                        <h3 className="text-sm font-medium text-muted-foreground">Conversations</h3>
+                    </div>
+                    <p className="text-3xl font-bold">{stats.conversations}</p>
+                </div>
+                <div className="rounded-xl border p-6">
+                    <div className="flex items-center gap-2 mb-2">
+                        <Hash className="h-4 w-4 text-muted-foreground" />
+                        <h3 className="text-sm font-medium text-muted-foreground">Messages</h3>
+                    </div>
+                    <p className="text-3xl font-bold">{stats.messages}</p>
+                </div>
+                <div className="rounded-xl border p-6">
+                    <div className="flex items-center gap-2 mb-2">
+                        <Cpu className="h-4 w-4 text-muted-foreground" />
+                        <h3 className="text-sm font-medium text-muted-foreground">Tokens</h3>
+                    </div>
+                    <p className="text-3xl font-bold">{formatTokens(stats.input_tokens + stats.output_tokens)}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                        {formatTokens(stats.input_tokens)} in / {formatTokens(stats.output_tokens)} out
+                    </p>
+                </div>
+                <div className="rounded-xl border p-6">
+                    <div className="flex items-center gap-2 mb-2">
+                        <Coins className="h-4 w-4 text-muted-foreground" />
+                        <h3 className="text-sm font-medium text-muted-foreground">Total Cost</h3>
+                    </div>
+                    <p className="text-3xl font-bold">{formatCost(stats.total_cost)}</p>
+                </div>
+            </div>
+
+            {/* Cost by Model */}
+            {stats.costByModel.length > 0 && (
+                <div>
+                    <h2 className="text-lg font-semibold mb-3">Cost by Model</h2>
+                    <DataTable columns={costColumns} data={stats.costByModel} />
+                </div>
+            )}
+        </>
+    );
+}
+
+function StatsSkeleton() {
+    return (
+        <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <span className="ml-2 text-sm text-muted-foreground">Loading stats...</span>
+        </div>
+    );
+}
+
 export default function Dashboard() {
-    const { stats, costByModel, providers, settings, templates } = usePage<{ props: DashboardProps }>().props as unknown as DashboardProps;
+    const { providers, settings, templates } = usePage<{ props: DashboardProps }>().props as unknown as DashboardProps;
 
     const form = useForm({
         default_model: settings.default_model,
@@ -218,53 +279,14 @@ export default function Dashboard() {
     };
 
     return (
-        <AppLayout>
+        <>
             <Head title="Dashboard" />
             <div className="mx-auto max-w-4xl space-y-8">
                 <h1 className="text-2xl font-bold">Dashboard</h1>
 
-                {/* Stats Row */}
-                <div className="grid gap-4 md:grid-cols-4">
-                    <div className="rounded-xl border p-6">
-                        <div className="flex items-center gap-2 mb-2">
-                            <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                            <h3 className="text-sm font-medium text-muted-foreground">Conversations</h3>
-                        </div>
-                        <p className="text-3xl font-bold">{stats.conversations}</p>
-                    </div>
-                    <div className="rounded-xl border p-6">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Hash className="h-4 w-4 text-muted-foreground" />
-                            <h3 className="text-sm font-medium text-muted-foreground">Messages</h3>
-                        </div>
-                        <p className="text-3xl font-bold">{stats.messages}</p>
-                    </div>
-                    <div className="rounded-xl border p-6">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Cpu className="h-4 w-4 text-muted-foreground" />
-                            <h3 className="text-sm font-medium text-muted-foreground">Tokens</h3>
-                        </div>
-                        <p className="text-3xl font-bold">{formatTokens(stats.input_tokens + stats.output_tokens)}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                            {formatTokens(stats.input_tokens)} in / {formatTokens(stats.output_tokens)} out
-                        </p>
-                    </div>
-                    <div className="rounded-xl border p-6">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Coins className="h-4 w-4 text-muted-foreground" />
-                            <h3 className="text-sm font-medium text-muted-foreground">Total Cost</h3>
-                        </div>
-                        <p className="text-3xl font-bold">{formatCost(stats.total_cost)}</p>
-                    </div>
-                </div>
-
-                {/* Cost by Model */}
-                {costByModel.length > 0 && (
-                    <div>
-                        <h2 className="text-lg font-semibold mb-3">Cost by Model</h2>
-                        <DataTable columns={costColumns} data={costByModel} />
-                    </div>
-                )}
+                <Deferred data="stats" fallback={<StatsSkeleton />}>
+                    <StatsContent />
+                </Deferred>
 
                 {/* Provider Status */}
                 <div>
@@ -320,6 +342,6 @@ export default function Dashboard() {
                 {/* Template Management */}
                 <TemplateManager templates={templates} />
             </div>
-        </AppLayout>
+        </>
     );
 }

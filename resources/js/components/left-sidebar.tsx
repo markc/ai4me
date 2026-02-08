@@ -14,7 +14,7 @@ export default function LeftSidebar() {
 
     return (
         <aside
-            className={`sidebar-slide fixed top-[var(--topnav-height)] left-0 z-40 flex h-[calc(100vh-var(--topnav-height))] w-[var(--sidebar-width)] flex-col overflow-y-auto border-r ${
+            className={`sidebar-slide fixed top-0 left-0 z-40 flex h-screen w-[var(--sidebar-width)] flex-col overflow-y-auto border-r pt-[var(--topnav-height)] ${
                 left.open ? 'translate-x-0' : '-translate-x-full'
             }`}
             style={{
@@ -43,6 +43,7 @@ export default function LeftSidebar() {
                         <Link
                             key={item.href}
                             href={item.href}
+                            prefetch
                             className={`flex items-center gap-3 border-l-[3px] px-3 py-2 text-sm transition-colors ${
                                 isActive
                                     ? 'border-[var(--scheme-accent)] bg-background text-[var(--scheme-accent)]'

@@ -14,7 +14,7 @@ export default function RightSidebar() {
 
     return (
         <aside
-            className={`sidebar-slide fixed top-[var(--topnav-height)] right-0 z-40 flex h-[calc(100vh-var(--topnav-height))] w-[var(--sidebar-width)] flex-col overflow-y-auto border-l ${
+            className={`sidebar-slide fixed top-0 right-0 z-40 flex h-screen w-[var(--sidebar-width)] flex-col overflow-y-auto border-l pt-[var(--topnav-height)] ${
                 right.open ? 'translate-x-0' : 'translate-x-full'
             }`}
             style={{

@@ -66,9 +66,9 @@ export default function MessageBubble({ message, isStreaming = false }: MessageB
     const hasAttachments = message.attachments && message.attachments.length > 0;
 
     return (
-        <div className="group/msg relative flex">
+        <div className="group/msg">
             {isUser ? (
-                <div className="bg-muted rounded-2xl px-4 py-3 w-full">
+                <div className="bg-muted rounded-2xl px-4 py-3">
                     {hasAttachments && (
                         <div className="flex flex-wrap gap-2 mb-2">
                             {message.attachments!.map(att => (
@@ -96,9 +96,14 @@ export default function MessageBubble({ message, isStreaming = false }: MessageB
                         </div>
                     )}
                     <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                    {!isStreaming && (
+                        <div className="flex justify-end mt-1">
+                            <MessageActions content={message.content} role={message.role} />
+                        </div>
+                    )}
                 </div>
             ) : (
-                <div className="w-full">
+                <div>
                     <div className="prose prose-sm dark:prose-invert max-w-none">
                         <Streamdown
                             mode={isStreaming ? 'typewriter' : 'static'}
@@ -107,17 +112,17 @@ export default function MessageBubble({ message, isStreaming = false }: MessageB
                             {message.content}
                         </Streamdown>
                     </div>
-                    {!isStreaming && message.input_tokens != null && (
-                        <p className="text-muted-foreground mt-1.5 text-xs">
-                            {formatTokens(message.input_tokens!)} in / {formatTokens(message.output_tokens ?? 0)} out
-                            {message.cost != null && ` · ${formatCost(message.cost)}`}
-                        </p>
+                    {!isStreaming && (
+                        <div className="flex items-center gap-3 mt-1.5">
+                            <MessageActions content={message.content} role={message.role} />
+                            {message.input_tokens != null && (
+                                <p className="text-muted-foreground text-xs">
+                                    {formatTokens(message.input_tokens!)} in / {formatTokens(message.output_tokens ?? 0)} out
+                                    {message.cost != null && ` · ${formatCost(message.cost)}`}
+                                </p>
+                            )}
+                        </div>
                     )}
-                </div>
-            )}
-            {!isStreaming && (
-                <div className="absolute -right-1 top-0 translate-x-full pl-1">
-                    <MessageActions content={message.content} role={message.role} />
                 </div>
             )}
         </div>

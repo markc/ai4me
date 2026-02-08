@@ -51,6 +51,7 @@ export default function ConversationSidebar({ conversations, currentId }: Conver
                     <div key={conv.id} className="group relative">
                         <Link
                             href={`/chat/${conv.id}`}
+                            prefetch
                             className={cn(
                                 'flex items-center gap-2 px-3 py-2 text-sm transition-colors hover:bg-muted',
                                 currentId === conv.id && 'bg-muted',
