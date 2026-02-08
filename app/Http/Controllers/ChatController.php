@@ -18,6 +18,7 @@ use Prism\Prism\ValueObjects\Messages\UserMessage;
 use Prism\Prism\ValueObjects\Messages\AssistantMessage;
 use Prism\Prism\ValueObjects\Media\Image;
 use Prism\Prism\ValueObjects\Media\Document;
+use Prism\Prism\ValueObjects\ProviderTool;
 
 class ChatController extends Controller
 {
@@ -79,6 +80,7 @@ class ChatController extends Controller
             'system_prompt' => 'nullable|string|max:5000',
             'attachment_temp_ids' => 'nullable|array',
             'attachment_temp_ids.*' => 'string',
+            'web_search' => 'nullable|boolean',
         ]);
 
         $user = Auth::user();
@@ -86,6 +88,12 @@ class ChatController extends Controller
         $conversationId = $request->input('conversation_id');
         $model = $request->input('model', 'claude-sonnet-4-5-20250929');
         $systemPrompt = $request->input('system_prompt');
+        $webSearch = $request->boolean('web_search');
+
+        // Web search requires Gemini — force model if needed
+        if ($webSearch && !str_starts_with($model, 'gemini-')) {
+            $model = 'gemini-2.0-flash';
+        }
 
         // Get or create conversation
         if ($conversationId) {
@@ -152,17 +160,22 @@ class ChatController extends Controller
             ?? $user->setting('default_system_prompt')
             ?? 'You are a helpful AI assistant. Be concise, accurate, and friendly. Format responses with markdown when appropriate.';
 
-        return response()->stream(function () use ($conversation, $prismMessages, $model, $provider, $effectiveSystemPrompt) {
+        return response()->stream(function () use ($conversation, $prismMessages, $model, $provider, $effectiveSystemPrompt, $webSearch) {
             $fullResponse = '';
             $inputTokens = null;
             $outputTokens = null;
 
             try {
-                $stream = Prism::text()
+                $builder = Prism::text()
                     ->using($provider, $model)
                     ->withSystemPrompt($effectiveSystemPrompt)
-                    ->withMessages($prismMessages)
-                    ->asStream();
+                    ->withMessages($prismMessages);
+
+                if ($webSearch) {
+                    $builder->withProviderTools([new ProviderTool('google_search')]);
+                }
+
+                $stream = $builder->asStream();
 
                 foreach ($stream as $event) {
                     if ($event instanceof TextDeltaEvent) {

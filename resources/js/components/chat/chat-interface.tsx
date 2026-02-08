@@ -25,6 +25,7 @@ export default function ChatInterface({ conversation, templates }: ChatInterface
     const [conversationId, setConversationId] = useState<number | undefined>(conversation?.id);
     const [systemPrompt, setSystemPrompt] = useState(conversation?.system_prompt ?? '');
     const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
+    const [webSearch, setWebSearch] = useState(false);
 
     const { data, send, isStreaming, isFetching, cancel } = useStream<{
         messages: { role: string; content: string }[];
@@ -32,6 +33,7 @@ export default function ChatInterface({ conversation, templates }: ChatInterface
         model?: string;
         system_prompt?: string;
         attachment_temp_ids?: string[];
+        web_search?: boolean;
     }>('/chat/stream', {
         csrfToken: '',
         headers: { 'X-XSRF-TOKEN': getXsrfToken() },
@@ -120,8 +122,9 @@ export default function ChatInterface({ conversation, templates }: ChatInterface
             model,
             system_prompt: systemPrompt || undefined,
             attachment_temp_ids: attachmentTempIds.length > 0 ? attachmentTempIds : undefined,
+            web_search: webSearch || undefined,
         });
-    }, [messages, conversationId, model, systemPrompt, pendingFiles, send]);
+    }, [messages, conversationId, model, systemPrompt, pendingFiles, webSearch, send]);
 
     return (
         <div className="relative h-full">
@@ -145,6 +148,8 @@ export default function ChatInterface({ conversation, templates }: ChatInterface
                     pendingFiles={pendingFiles}
                     onFilesSelected={handleFilesSelected}
                     onRemoveFile={handleRemoveFile}
+                    webSearch={webSearch}
+                    onWebSearchChange={setWebSearch}
                 />
             </div>
         </div>

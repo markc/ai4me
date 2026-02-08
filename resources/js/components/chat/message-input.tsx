@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
-import { ArrowUp, Square, Paperclip, X, FileText } from 'lucide-react';
+import { ArrowUp, Square, Paperclip, X, FileText, Globe } from 'lucide-react';
 import type { SystemPromptTemplate } from '@/types/chat';
 
 interface PendingFile {
@@ -20,6 +20,8 @@ interface MessageInputProps {
     pendingFiles: PendingFile[];
     onFilesSelected: (files: FileList) => void;
     onRemoveFile: (index: number) => void;
+    webSearch: boolean;
+    onWebSearchChange: (enabled: boolean) => void;
 }
 
 const models = [
@@ -38,6 +40,7 @@ export default function MessageInput({
     onSend, onCancel, disabled, isStreaming, model, onModelChange,
     systemPrompt, onSystemPromptChange, templates,
     pendingFiles, onFilesSelected, onRemoveFile,
+    webSearch, onWebSearchChange,
 }: MessageInputProps) {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -156,6 +159,20 @@ export default function MessageInput({
                                 title="Attach files"
                             >
                                 <Paperclip className="h-4 w-4 text-muted-foreground" />
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => onWebSearchChange(!webSearch)}
+                                className={`flex h-8 shrink-0 items-center gap-1 rounded-lg px-2 text-xs font-medium transition-colors ${
+                                    webSearch
+                                        ? 'bg-[var(--scheme-accent)] text-white'
+                                        : 'hover:bg-muted text-muted-foreground'
+                                }`}
+                                title="Web search (uses Gemini)"
+                            >
+                                <Globe className="h-3.5 w-3.5" />
+                                <span>Search</span>
                             </button>
 
                             <select
