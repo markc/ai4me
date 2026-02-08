@@ -14,7 +14,7 @@ export default function RightSidebar() {
 
     return (
         <aside
-            className={`sidebar-slide fixed top-0 right-0 z-40 flex h-screen w-[var(--sidebar-width)] flex-col overflow-y-auto border-l pt-[var(--topnav-height)] ${
+            className={`sidebar-slide fixed top-0 right-0 z-40 flex h-screen w-[var(--sidebar-width)] flex-col overflow-y-auto border-l ${
                 right.open ? 'translate-x-0' : 'translate-x-full'
             }`}
             style={{
@@ -24,8 +24,7 @@ export default function RightSidebar() {
                 borderColor: 'var(--glass-border)',
             }}
         >
-            <div className="flex items-center justify-between border-b p-3" style={{ borderColor: 'var(--glass-border)' }}>
-                <span className="text-sm" style={{ color: 'var(--scheme-fg-muted)' }}>Theme</span>
+            <div className="flex h-[var(--topnav-height)] shrink-0 items-center border-b px-3" style={{ borderColor: 'var(--glass-border)' }}>
                 <button
                     onClick={() => pinSidebar('right')}
                     className="hidden rounded p-1 transition-colors hover:bg-background xl:block"
@@ -34,6 +33,8 @@ export default function RightSidebar() {
                 >
                     {right.pinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
                 </button>
+                <span className="flex-1 text-center text-sm" style={{ color: 'var(--scheme-fg-muted)' }}>Theme</span>
+                <div className="w-8" />
             </div>
 
             <div className="flex flex-col gap-4 p-4">

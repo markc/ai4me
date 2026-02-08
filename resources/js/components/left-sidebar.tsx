@@ -14,7 +14,7 @@ export default function LeftSidebar() {
 
     return (
         <aside
-            className={`sidebar-slide fixed top-0 left-0 z-40 flex h-screen w-[var(--sidebar-width)] flex-col overflow-y-auto border-r pt-[var(--topnav-height)] ${
+            className={`sidebar-slide fixed top-0 left-0 z-40 flex h-screen w-[var(--sidebar-width)] flex-col overflow-y-auto border-r ${
                 left.open ? 'translate-x-0' : '-translate-x-full'
             }`}
             style={{
@@ -24,8 +24,9 @@ export default function LeftSidebar() {
                 borderColor: 'var(--glass-border)',
             }}
         >
-            <div className="flex items-center justify-between border-b p-3" style={{ borderColor: 'var(--glass-border)' }}>
-                <span className="text-sm" style={{ color: 'var(--scheme-fg-muted)' }}>Navigation</span>
+            <div className="flex h-[var(--topnav-height)] shrink-0 items-center border-b px-3" style={{ borderColor: 'var(--glass-border)' }}>
+                <div className="w-8" />
+                <span className="flex-1 text-center text-sm" style={{ color: 'var(--scheme-fg-muted)' }}>Navigation</span>
                 <button
                     onClick={() => pinSidebar('left')}
                     className="hidden rounded p-1 transition-colors hover:bg-background xl:block"
