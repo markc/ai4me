@@ -16,6 +16,24 @@ return [
     */
 
     'default' => 'anthropic',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Model Pricing (per 1M tokens: [input, output])
+    |--------------------------------------------------------------------------
+    */
+
+    'pricing' => [
+        'claude-haiku-3-5-20241022'      => [0.80, 4.00],
+        'claude-sonnet-4-5-20250929'     => [3.00, 15.00],
+        'claude-opus-4-6'                => [15.00, 75.00],
+        'gpt-4o-mini'                    => [0.15, 0.60],
+        'gpt-4o'                         => [2.50, 10.00],
+        'o3-mini'                        => [1.10, 4.40],
+        'gemini-2.0-flash'               => [0.10, 0.40],
+        'gemini-2.0-flash-lite'          => [0.075, 0.30],
+        'gemini-2.5-pro-preview-06-05'   => [1.25, 10.00],
+    ],
     'default_for_images' => 'gemini',
     'default_for_audio' => 'openai',
     'default_for_transcription' => 'openai',

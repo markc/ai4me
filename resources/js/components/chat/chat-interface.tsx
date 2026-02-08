@@ -1,4 +1,4 @@
-import type { Message, ConversationWithMessages } from '@/types/chat';
+import type { Message, ConversationWithMessages, SystemPromptTemplate } from '@/types/chat';
 import { useStream } from '@laravel/stream-react';
 import { useCallback, useEffect, useState } from 'react';
 import MessageList from './message-list';
@@ -9,19 +9,29 @@ function getXsrfToken(): string {
     return match ? decodeURIComponent(match[1]) : '';
 }
 
-interface ChatInterfaceProps {
-    conversation?: ConversationWithMessages | null;
+interface PendingFile {
+    file: File;
+    preview?: string;
 }
 
-export default function ChatInterface({ conversation }: ChatInterfaceProps) {
+interface ChatInterfaceProps {
+    conversation?: ConversationWithMessages | null;
+    templates: SystemPromptTemplate[];
+}
+
+export default function ChatInterface({ conversation, templates }: ChatInterfaceProps) {
     const [messages, setMessages] = useState<Message[]>(conversation?.messages ?? []);
     const [model, setModel] = useState(conversation?.model ?? 'claude-sonnet-4-5-20250929');
     const [conversationId, setConversationId] = useState<number | undefined>(conversation?.id);
+    const [systemPrompt, setSystemPrompt] = useState(conversation?.system_prompt ?? '');
+    const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
 
     const { data, send, isStreaming, isFetching, cancel } = useStream<{
         messages: { role: string; content: string }[];
         conversation_id?: number;
         model?: string;
+        system_prompt?: string;
+        attachment_temp_ids?: string[];
     }>('/chat/stream', {
         csrfToken: '',
         headers: { 'X-XSRF-TOKEN': getXsrfToken() },
@@ -40,6 +50,7 @@ export default function ChatInterface({ conversation }: ChatInterfaceProps) {
         setMessages(conversation?.messages ?? []);
         setConversationId(conversation?.id);
         setModel(conversation?.model ?? 'claude-sonnet-4-5-20250929');
+        setSystemPrompt(conversation?.system_prompt ?? '');
     }, [conversation]);
 
     // When streaming finishes, commit the streamed response to the messages array
@@ -53,19 +64,64 @@ export default function ChatInterface({ conversation }: ChatInterfaceProps) {
         }
     }, [isStreaming, data]);
 
-    const handleSend = useCallback((content: string) => {
+    const handleFilesSelected = useCallback((files: FileList) => {
+        const newFiles: PendingFile[] = Array.from(files).map(file => {
+            const pf: PendingFile = { file };
+            if (file.type.startsWith('image/')) {
+                pf.preview = URL.createObjectURL(file);
+            }
+            return pf;
+        });
+        setPendingFiles(prev => [...prev, ...newFiles]);
+    }, []);
+
+    const handleRemoveFile = useCallback((index: number) => {
+        setPendingFiles(prev => {
+            const removed = prev[index];
+            if (removed?.preview) URL.revokeObjectURL(removed.preview);
+            return prev.filter((_, i) => i !== index);
+        });
+    }, []);
+
+    const handleSend = useCallback(async (content: string) => {
         const userMessage: Message = { role: 'user', content };
         const updatedMessages = [...messages, userMessage];
         setMessages(updatedMessages);
 
         const payload = updatedMessages.map(m => ({ role: m.role, content: m.content }));
 
+        let attachmentTempIds: string[] = [];
+
+        // Upload files first if any
+        if (pendingFiles.length > 0) {
+            const formData = new FormData();
+            pendingFiles.forEach(pf => formData.append('files[]', pf.file));
+
+            try {
+                const res = await fetch('/chat/upload', {
+                    method: 'POST',
+                    headers: { 'X-XSRF-TOKEN': getXsrfToken() },
+                    body: formData,
+                });
+                const json = await res.json();
+                attachmentTempIds = json.temp_ids ?? [];
+            } catch (e) {
+                console.error('Upload failed:', e);
+            }
+
+            // Clean up previews
+            pendingFiles.forEach(pf => { if (pf.preview) URL.revokeObjectURL(pf.preview); });
+            setPendingFiles([]);
+        }
+
         send({
             messages: payload,
             conversation_id: conversationId,
             model,
+            system_prompt: systemPrompt || undefined,
+            attachment_temp_ids: attachmentTempIds.length > 0 ? attachmentTempIds : undefined,
         });
-    }, [messages, conversationId, model, send]);
+    }, [messages, conversationId, model, systemPrompt, pendingFiles, send]);
 
     return (
         <div className="flex h-full flex-col">
@@ -81,6 +137,12 @@ export default function ChatInterface({ conversation }: ChatInterfaceProps) {
                 isStreaming={isStreaming}
                 model={model}
                 onModelChange={setModel}
+                systemPrompt={systemPrompt}
+                onSystemPromptChange={setSystemPrompt}
+                templates={templates}
+                pendingFiles={pendingFiles}
+                onFilesSelected={handleFilesSelected}
+                onRemoveFile={handleRemoveFile}
             />
         </div>
     );

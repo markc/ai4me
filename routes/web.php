@@ -10,15 +10,21 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-Route::get('dashboard', function () {
-    return Inertia::render('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
+    Route::post('dashboard/settings', [App\Http\Controllers\DashboardController::class, 'updateSettings'])->name('dashboard.settings');
+
     Route::get('chat', [App\Http\Controllers\ChatController::class, 'index'])->name('chat.index');
-    Route::get('chat/{conversation}', [App\Http\Controllers\ChatController::class, 'show'])->name('chat.show');
     Route::post('chat/stream', [App\Http\Controllers\ChatController::class, 'stream'])->name('chat.stream');
+    Route::post('chat/upload', [App\Http\Controllers\ChatController::class, 'upload'])->name('chat.upload');
+    Route::get('chat/attachment/{attachment}', [App\Http\Controllers\ChatController::class, 'attachment'])->name('chat.attachment');
+    Route::get('chat/{conversation}', [App\Http\Controllers\ChatController::class, 'show'])->name('chat.show');
+    Route::get('chat/{conversation}/export', [App\Http\Controllers\ChatController::class, 'export'])->name('chat.export');
     Route::delete('chat/{conversation}', [App\Http\Controllers\ChatController::class, 'destroy'])->name('chat.destroy');
+
+    Route::post('templates', [App\Http\Controllers\SystemPromptTemplateController::class, 'store'])->name('templates.store');
+    Route::put('templates/{template}', [App\Http\Controllers\SystemPromptTemplateController::class, 'update'])->name('templates.update');
+    Route::delete('templates/{template}', [App\Http\Controllers\SystemPromptTemplateController::class, 'destroy'])->name('templates.destroy');
 
     Route::get('users', [App\Http\Controllers\UserController::class, 'index'])->name('users.index');
 });

@@ -19,6 +19,21 @@ class User extends Authenticatable
         return $this->hasMany(Conversation::class);
     }
 
+    public function settings(): HasMany
+    {
+        return $this->hasMany(UserSetting::class);
+    }
+
+    public function setting(string $key, mixed $default = null): mixed
+    {
+        return $this->settings()->where('key', $key)->value('value') ?? $default;
+    }
+
+    public function systemPromptTemplates(): HasMany
+    {
+        return $this->hasMany(SystemPromptTemplate::class);
+    }
+
     /**
      * The attributes that are mass assignable.
      *

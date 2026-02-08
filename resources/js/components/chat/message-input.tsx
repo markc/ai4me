@@ -1,5 +1,11 @@
-import { useCallback, useEffect, useRef, type FormEvent, type KeyboardEvent } from 'react';
-import { Send, Square } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
+import { ArrowUp, Square, Paperclip, X, FileText } from 'lucide-react';
+import type { SystemPromptTemplate } from '@/types/chat';
+
+interface PendingFile {
+    file: File;
+    preview?: string;
+}
 
 interface MessageInputProps {
     onSend: (content: string) => void;
@@ -8,6 +14,12 @@ interface MessageInputProps {
     isStreaming?: boolean;
     model: string;
     onModelChange: (model: string) => void;
+    systemPrompt: string;
+    onSystemPromptChange: (prompt: string) => void;
+    templates: SystemPromptTemplate[];
+    pendingFiles: PendingFile[];
+    onFilesSelected: (files: FileList) => void;
+    onRemoveFile: (index: number) => void;
 }
 
 const models = [
@@ -22,8 +34,14 @@ const models = [
     { value: 'gemini-2.5-pro-preview-06-05', label: 'Gemini 2.5 Pro', group: 'Google' },
 ];
 
-export default function MessageInput({ onSend, onCancel, disabled, isStreaming, model, onModelChange }: MessageInputProps) {
+export default function MessageInput({
+    onSend, onCancel, disabled, isStreaming, model, onModelChange,
+    systemPrompt, onSystemPromptChange, templates,
+    pendingFiles, onFilesSelected, onRemoveFile,
+}: MessageInputProps) {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [showCustomPrompt, setShowCustomPrompt] = useState(false);
 
     useEffect(() => {
         if (!disabled && !isStreaming) {
@@ -56,54 +74,136 @@ export default function MessageInput({ onSend, onCancel, disabled, isStreaming, 
         }
     }, [handleSubmit]);
 
+    const handleTemplateChange = (value: string) => {
+        if (value === '__custom__') {
+            setShowCustomPrompt(true);
+        } else {
+            setShowCustomPrompt(false);
+            onSystemPromptChange(value);
+        }
+    };
+
     return (
-        <div className="border-t bg-background">
+        <div className="bg-background">
             <div className="mx-auto max-w-3xl p-4">
-                <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-                    <div className="flex items-end gap-2">
+                {showCustomPrompt && (
+                    <div className="mb-2 rounded-xl border bg-muted/30 p-3">
+                        <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-medium text-muted-foreground">Custom System Prompt</span>
+                            <button onClick={() => { setShowCustomPrompt(false); onSystemPromptChange(''); }} className="rounded p-0.5 hover:bg-muted">
+                                <X className="h-3 w-3 text-muted-foreground" />
+                            </button>
+                        </div>
                         <textarea
-                            ref={textareaRef}
-                            rows={1}
-                            placeholder="Type a message..."
-                            disabled={disabled || isStreaming}
-                            onInput={autoResize}
-                            onKeyDown={handleKeyDown}
-                            className="flex-1 resize-none rounded-xl border bg-muted/50 px-4 py-3 text-sm outline-none transition-colors focus:border-[var(--scheme-accent)] disabled:opacity-50"
+                            value={systemPrompt}
+                            onChange={e => onSystemPromptChange(e.target.value)}
+                            rows={3}
+                            placeholder="Enter a custom system prompt..."
+                            className="w-full rounded-lg border bg-transparent px-3 py-1.5 text-xs outline-none resize-none focus:border-[var(--scheme-accent)]"
                         />
-                        {isStreaming ? (
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="rounded-2xl border bg-muted/30 focus-within:border-[var(--scheme-accent)] transition-colors">
+                    <textarea
+                        ref={textareaRef}
+                        rows={1}
+                        placeholder="Type a message..."
+                        disabled={disabled || isStreaming}
+                        onInput={autoResize}
+                        onKeyDown={handleKeyDown}
+                        className="w-full resize-none border-none bg-transparent px-4 pt-3 pb-2 text-sm outline-none placeholder:text-muted-foreground disabled:opacity-50"
+                    />
+
+                    {pendingFiles.length > 0 && (
+                        <div className="flex flex-wrap gap-2 px-3 pb-2">
+                            {pendingFiles.map((pf, i) => (
+                                <div key={i} className="relative group/file">
+                                    {pf.preview ? (
+                                        <img src={pf.preview} alt={pf.file.name} className="h-14 w-14 rounded-lg object-cover border" />
+                                    ) : (
+                                        <div className="flex items-center gap-1 rounded-lg border bg-background px-2 py-1.5 text-xs">
+                                            <FileText className="h-3.5 w-3.5" />
+                                            <span className="max-w-[80px] truncate">{pf.file.name}</span>
+                                        </div>
+                                    )}
+                                    <button
+                                        type="button"
+                                        onClick={() => onRemoveFile(i)}
+                                        className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-white text-[10px] opacity-0 group-hover/file:opacity-100 transition-opacity"
+                                    >
+                                        <X className="h-2.5 w-2.5" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    <div className="flex items-center justify-between gap-2 px-3 pb-2">
+                        <div className="flex items-center gap-2">
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                multiple
+                                accept="image/*,.pdf,.txt,.md"
+                                className="hidden"
+                                onChange={e => { if (e.target.files?.length) onFilesSelected(e.target.files); e.target.value = ''; }}
+                            />
                             <button
                                 type="button"
-                                onClick={onCancel}
-                                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive text-destructive-foreground transition-colors hover:bg-destructive/90"
+                                onClick={() => fileInputRef.current?.click()}
+                                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-muted"
+                                title="Attach files"
                             >
-                                <Square className="h-4 w-4" />
+                                <Paperclip className="h-4 w-4 text-muted-foreground" />
                             </button>
-                        ) : (
-                            <button
-                                type="submit"
-                                disabled={disabled}
-                                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors disabled:opacity-50"
-                                style={{ backgroundColor: 'var(--scheme-accent)', color: 'white' }}
+
+                            <select
+                                value={showCustomPrompt ? '__custom__' : systemPrompt || ''}
+                                onChange={e => handleTemplateChange(e.target.value)}
+                                className="rounded-lg border bg-muted/50 px-2 py-1 text-xs outline-none max-w-[140px]"
                             >
-                                <Send className="h-4 w-4" />
-                            </button>
-                        )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <select
-                            value={model}
-                            onChange={e => onModelChange(e.target.value)}
-                            className="rounded-lg border bg-muted/50 px-2 py-1 text-xs outline-none"
-                        >
-                            {Object.entries(Object.groupBy(models, m => m.group)).map(([group, items]) => (
-                                <optgroup key={group} label={group}>
-                                    {items!.map(m => (
-                                        <option key={m.value} value={m.value}>{m.label}</option>
-                                    ))}
-                                </optgroup>
-                            ))}
-                        </select>
-                        <span className="text-muted-foreground text-xs">Shift+Enter for new line</span>
+                                <option value="">Default prompt</option>
+                                {templates.map(t => (
+                                    <option key={t.id} value={t.prompt}>{t.name}</option>
+                                ))}
+                                <option value="__custom__">Custom...</option>
+                            </select>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <select
+                                value={model}
+                                onChange={e => onModelChange(e.target.value)}
+                                className="rounded-lg border bg-muted/50 px-2 py-1 text-xs outline-none"
+                            >
+                                {Object.entries(Object.groupBy(models, m => m.group)).map(([group, items]) => (
+                                    <optgroup key={group} label={group}>
+                                        {items!.map(m => (
+                                            <option key={m.value} value={m.value}>{m.label}</option>
+                                        ))}
+                                    </optgroup>
+                                ))}
+                            </select>
+                            {isStreaming ? (
+                                <button
+                                    type="button"
+                                    onClick={onCancel}
+                                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-destructive text-destructive-foreground transition-colors hover:bg-destructive/90"
+                                >
+                                    <Square className="h-4 w-4" />
+                                </button>
+                            ) : (
+                                <button
+                                    type="submit"
+                                    disabled={disabled}
+                                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors disabled:opacity-50"
+                                    style={{ backgroundColor: 'var(--scheme-accent)', color: 'white' }}
+                                >
+                                    <ArrowUp className="h-4 w-4" />
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </form>
             </div>

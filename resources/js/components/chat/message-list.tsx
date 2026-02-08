@@ -35,7 +35,7 @@ export default function MessageList({ messages, streamingContent, isStreaming }:
 
     return (
         <div ref={scrollRef} className="flex-1 overflow-y-auto">
-            <div className="mx-auto max-w-3xl space-y-4 p-4">
+            <div className="mx-auto max-w-3xl space-y-6 p-4">
                 {messages.length === 0 && !streamingContent && (
                     <p className="text-muted-foreground mt-16 text-center text-lg">
                         Start a conversation
