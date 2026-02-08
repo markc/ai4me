@@ -164,21 +164,24 @@ class ChatController extends Controller
                 // Two-step web search: Gemini searches, then chosen model answers
                 if ($webSearch) {
                     $lastMsg = end($prismMessages);
-                    $query = $lastMsg instanceof UserMessage ? $lastMsg->text() : '';
+                    $query = $lastMsg instanceof UserMessage ? $lastMsg->content : '';
 
-                    $searchResponse = Prism::text()
-                        ->using(Provider::Gemini, 'gemini-2.0-flash')
-                        ->withProviderTools([new ProviderTool('google_search')])
-                        ->withPrompt("Search the web and provide a comprehensive summary of current information about: {$query}")
-                        ->asText();
+                    try {
+                        $searchResponse = Prism::text()
+                            ->using(Provider::Gemini, 'gemini-2.0-flash')
+                            ->withProviderTools([new ProviderTool('google_search')])
+                            ->withPrompt("Search the web and provide a comprehensive summary of current information about: {$query}")
+                            ->asText();
 
-                    // Replace last user message with search context + original question
-                    $lastIndex = count($prismMessages) - 1;
-                    $enriched = "Web search results:\n\n{$searchResponse->text}\n\n---\n\nUsing the above search results as context, please answer: {$query}";
-                    $media = $lastMsg instanceof UserMessage
-                        ? array_merge($lastMsg->images(), $lastMsg->documents())
-                        : [];
-                    $prismMessages[$lastIndex] = new UserMessage($enriched, $media);
+                        $lastIndex = count($prismMessages) - 1;
+                        $enriched = "Web search results:\n\n{$searchResponse->text}\n\n---\n\nUsing the above search results as context, please answer: {$query}";
+                        $media = $lastMsg instanceof UserMessage
+                            ? array_merge($lastMsg->images(), $lastMsg->documents())
+                            : [];
+                        $prismMessages[$lastIndex] = new UserMessage($enriched, $media);
+                    } catch (\Exception $e) {
+                        \Log::warning('Web search failed, continuing without: ' . $e->getMessage());
+                    }
                 }
 
                 $stream = Prism::text()
