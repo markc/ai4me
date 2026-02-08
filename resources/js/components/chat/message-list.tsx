@@ -10,27 +10,52 @@ interface MessageListProps {
 
 export default function MessageList({ messages, streamingContent, isStreaming }: MessageListProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
+    const bottomRef = useRef<HTMLDivElement>(null);
     const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
+    const userScrolledRef = useRef(false);
 
-    const handleScroll = useCallback(() => {
+    const isNearBottom = useCallback(() => {
         const el = scrollRef.current;
-        if (!el) return;
-        const atBottom = Math.abs(el.scrollHeight - el.scrollTop - el.clientHeight) <= 2;
-        setShouldAutoScroll(atBottom);
+        if (!el) return true;
+        return el.scrollHeight - el.scrollTop - el.clientHeight <= 80;
     }, []);
 
+    const handleScroll = useCallback(() => {
+        // Only disable auto-scroll if user explicitly scrolled up during streaming
+        if (userScrolledRef.current) {
+            setShouldAutoScroll(isNearBottom());
+        }
+    }, [isNearBottom]);
+
+    // Re-enable auto-scroll when user sends a new message (messages.length changes)
     useEffect(() => {
-        if (scrollRef.current && shouldAutoScroll) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        setShouldAutoScroll(true);
+        userScrolledRef.current = false;
+    }, [messages.length]);
+
+    // Scroll to bottom during streaming and when messages change
+    useEffect(() => {
+        if (shouldAutoScroll && bottomRef.current) {
+            bottomRef.current.scrollIntoView({ behavior: 'instant' });
         }
     }, [messages.length, streamingContent, shouldAutoScroll]);
 
+    // Track user-initiated scrolls (distinguish from programmatic scrolls)
     useEffect(() => {
         const el = scrollRef.current;
-        if (el) {
-            el.addEventListener('scroll', handleScroll);
-            return () => el.removeEventListener('scroll', handleScroll);
-        }
+        if (!el) return;
+
+        const onWheel = () => { userScrolledRef.current = true; };
+        const onTouchMove = () => { userScrolledRef.current = true; };
+
+        el.addEventListener('scroll', handleScroll);
+        el.addEventListener('wheel', onWheel);
+        el.addEventListener('touchmove', onTouchMove);
+        return () => {
+            el.removeEventListener('scroll', handleScroll);
+            el.removeEventListener('wheel', onWheel);
+            el.removeEventListener('touchmove', onTouchMove);
+        };
     }, [handleScroll]);
 
     return (
@@ -52,6 +77,8 @@ export default function MessageList({ messages, streamingContent, isStreaming }:
                         isStreaming
                     />
                 )}
+
+                <div ref={bottomRef} />
             </div>
         </div>
     );
