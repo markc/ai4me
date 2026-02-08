@@ -1,5 +1,4 @@
 import LeftSidebar from '@/components/left-sidebar';
-import Overlay from '@/components/overlay';
 import RightSidebar from '@/components/right-sidebar';
 import TopNav from '@/components/top-nav';
 import { ThemeProvider, useTheme } from '@/contexts/theme-context';
@@ -13,7 +12,6 @@ function LayoutContent({ children, noPadding }: { children: ReactNode; noPadding
             <TopNav />
             <LeftSidebar />
             <RightSidebar />
-            <Overlay />
 
             <main
                 className={`sidebar-slide mt-[var(--topnav-height)] ${noPadding ? 'h-[calc(100vh-var(--topnav-height))] overflow-hidden' : 'min-h-[calc(100vh-var(--topnav-height))] p-4'}`}

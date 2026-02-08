@@ -59,13 +59,14 @@ export default function ConversationSidebar({ conversations, currentId }: Conver
                             <MessageSquare className="h-3.5 w-3.5 shrink-0" />
                             <span className="truncate">{conv.title}</span>
                         </Link>
-                        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+                        <div className="absolute right-1 top-1/2 -translate-y-1/2 flex gap-0.5 rounded-lg border bg-background px-1 py-0.5 shadow-sm opacity-0 transition-opacity group-hover:opacity-100">
                             <a
                                 href={`/chat/${conv.id}/export`}
                                 target="_blank"
                                 rel="noopener"
                                 onClick={e => e.stopPropagation()}
                                 className="rounded p-1 hover:bg-muted"
+                                title="Export conversation"
                             >
                                 <Download className="text-muted-foreground h-3.5 w-3.5" />
                             </a>
@@ -76,6 +77,7 @@ export default function ConversationSidebar({ conversations, currentId }: Conver
                                     router.delete(`/chat/${conv.id}`, { preserveScroll: true });
                                 }}
                                 className="rounded p-1 hover:bg-destructive/10"
+                                title="Delete conversation"
                             >
                                 <Trash2 className="text-muted-foreground hover:text-destructive h-3.5 w-3.5" />
                             </button>

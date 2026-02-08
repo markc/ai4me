@@ -1,7 +1,8 @@
 import type { Message } from '@/types/chat';
 import { Streamdown } from 'streamdown';
 import { createCodePlugin } from '@streamdown/code';
-import { FileText } from 'lucide-react';
+import { FileText, Copy, Download, Check } from 'lucide-react';
+import { useState, useCallback } from 'react';
 
 interface MessageBubbleProps {
     message: Message;
@@ -18,12 +19,54 @@ function formatTokens(n: number): string {
     return n.toLocaleString();
 }
 
+function MessageActions({ content, role }: { content: string; role: string }) {
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = useCallback(async () => {
+        await navigator.clipboard.writeText(content);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+    }, [content]);
+
+    const handleDownload = useCallback(() => {
+        const blob = new Blob([content], { type: 'text/markdown' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${role}-message.md`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }, [content, role]);
+
+    return (
+        <div className="flex gap-0.5 opacity-0 group-hover/msg:opacity-100 transition-opacity">
+            <button
+                onClick={handleCopy}
+                className="rounded p-1 hover:bg-muted"
+                title="Copy message"
+            >
+                {copied
+                    ? <Check className="h-3.5 w-3.5 text-green-500" />
+                    : <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                }
+            </button>
+            <button
+                onClick={handleDownload}
+                className="rounded p-1 hover:bg-muted"
+                title="Download as markdown"
+            >
+                <Download className="h-3.5 w-3.5 text-muted-foreground" />
+            </button>
+        </div>
+    );
+}
+
 export default function MessageBubble({ message, isStreaming = false }: MessageBubbleProps) {
     const isUser = message.role === 'user';
     const hasAttachments = message.attachments && message.attachments.length > 0;
 
     return (
-        <div className="flex">
+        <div className="group/msg relative flex">
             {isUser ? (
                 <div className="bg-muted rounded-2xl px-4 py-3 w-full">
                     {hasAttachments && (
@@ -70,6 +113,11 @@ export default function MessageBubble({ message, isStreaming = false }: MessageB
                             {message.cost != null && ` · ${formatCost(message.cost)}`}
                         </p>
                     )}
+                </div>
+            )}
+            {!isStreaming && (
+                <div className="absolute -right-1 top-0 translate-x-full pl-1">
+                    <MessageActions content={message.content} role={message.role} />
                 </div>
             )}
         </div>

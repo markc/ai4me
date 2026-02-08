@@ -93,6 +93,10 @@ class ChatController extends Controller
         // Get or create conversation
         if ($conversationId) {
             $conversation = Conversation::where('user_id', $user->id)->findOrFail($conversationId);
+            // Update model if user switched mid-conversation
+            if ($conversation->model !== $model) {
+                $conversation->update(['model' => $model]);
+            }
         } else {
             $conversation = $user->conversations()->create([
                 'title' => 'Untitled',
