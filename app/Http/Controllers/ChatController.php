@@ -90,11 +90,6 @@ class ChatController extends Controller
         $systemPrompt = $request->input('system_prompt');
         $webSearch = $request->boolean('web_search');
 
-        // Web search requires Gemini — force model if needed
-        if ($webSearch && !str_starts_with($model, 'gemini-')) {
-            $model = 'gemini-2.0-flash';
-        }
-
         // Get or create conversation
         if ($conversationId) {
             $conversation = Conversation::where('user_id', $user->id)->findOrFail($conversationId);
@@ -166,16 +161,31 @@ class ChatController extends Controller
             $outputTokens = null;
 
             try {
-                $builder = Prism::text()
-                    ->using($provider, $model)
-                    ->withSystemPrompt($effectiveSystemPrompt)
-                    ->withMessages($prismMessages);
-
+                // Two-step web search: Gemini searches, then chosen model answers
                 if ($webSearch) {
-                    $builder->withProviderTools([new ProviderTool('google_search')]);
+                    $lastMsg = end($prismMessages);
+                    $query = $lastMsg instanceof UserMessage ? $lastMsg->text() : '';
+
+                    $searchResponse = Prism::text()
+                        ->using(Provider::Gemini, 'gemini-2.0-flash')
+                        ->withProviderTools([new ProviderTool('google_search')])
+                        ->withPrompt("Search the web and provide a comprehensive summary of current information about: {$query}")
+                        ->asText();
+
+                    // Replace last user message with search context + original question
+                    $lastIndex = count($prismMessages) - 1;
+                    $enriched = "Web search results:\n\n{$searchResponse->text}\n\n---\n\nUsing the above search results as context, please answer: {$query}";
+                    $media = $lastMsg instanceof UserMessage
+                        ? array_merge($lastMsg->images(), $lastMsg->documents())
+                        : [];
+                    $prismMessages[$lastIndex] = new UserMessage($enriched, $media);
                 }
 
-                $stream = $builder->asStream();
+                $stream = Prism::text()
+                    ->using($provider, $model)
+                    ->withSystemPrompt($effectiveSystemPrompt)
+                    ->withMessages($prismMessages)
+                    ->asStream();
 
                 foreach ($stream as $event) {
                     if ($event instanceof TextDeltaEvent) {
