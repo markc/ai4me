@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { ArrowUp, Square, Paperclip, X, FileText, Globe } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import type { SystemPromptTemplate } from '@/types/chat';
 
 interface PendingFile {

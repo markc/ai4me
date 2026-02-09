@@ -1,5 +1,6 @@
 import { usePage } from '@inertiajs/react';
-import { BarChart3, Cpu, DollarSign, Hash, MessageSquare } from 'lucide-react';
+import type { BarChart3} from 'lucide-react';
+import { Cpu, DollarSign, Hash, MessageSquare } from 'lucide-react';
 
 type SidebarStats = {
     conversations: number;

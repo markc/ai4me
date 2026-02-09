@@ -1,8 +1,8 @@
-import type { Message, ConversationWithMessages, SystemPromptTemplate } from '@/types/chat';
 import { useStream } from '@laravel/stream-react';
 import { useCallback, useEffect, useState } from 'react';
-import MessageList from './message-list';
+import type { Message, ConversationWithMessages, SystemPromptTemplate } from '@/types/chat';
 import MessageInput from './message-input';
+import MessageList from './message-list';
 
 function getXsrfToken(): string {
     const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
@@ -131,7 +131,6 @@ export default function ChatInterface({ conversation, templates }: ChatInterface
             <MessageList
                 messages={messages}
                 streamingContent={isStreaming ? data : undefined}
-                isStreaming={isStreaming}
             />
             <div className="absolute bottom-0 left-0 right-0">
                 <div className="pointer-events-none h-8 bg-gradient-to-t from-background to-transparent" />

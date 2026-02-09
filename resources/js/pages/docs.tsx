@@ -1,8 +1,8 @@
-import { useTheme } from '@/contexts/theme-context';
 import { Head, usePage } from '@inertiajs/react';
+import { createCodePlugin } from '@streamdown/code';
 import { useLayoutEffect } from 'react';
 import { Streamdown } from 'streamdown';
-import { createCodePlugin } from '@streamdown/code';
+import { useTheme } from '@/contexts/theme-context';
 
 type DocProps = {
     doc: { slug: string; title: string; content: string } | null;

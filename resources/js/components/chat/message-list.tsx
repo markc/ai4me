@@ -1,14 +1,13 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Message } from '@/types/chat';
 import MessageBubble from './message-bubble';
-import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface MessageListProps {
     messages: Message[];
     streamingContent?: string;
-    isStreaming: boolean;
 }
 
-export default function MessageList({ messages, streamingContent, isStreaming }: MessageListProps) {
+export default function MessageList({ messages, streamingContent }: MessageListProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
     const bottomRef = useRef<HTMLDivElement>(null);
     const [shouldAutoScroll, setShouldAutoScroll] = useState(true);

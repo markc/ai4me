@@ -1,9 +1,9 @@
-import { useTheme } from '@/contexts/theme-context';
+import { Pin, PinOff } from 'lucide-react';
 import PanelCarousel from '@/components/panel-carousel';
-import NavPanel from '@/components/panels/nav-panel';
 import ConversationsPanel from '@/components/panels/conversations-panel';
 import DocsPanel from '@/components/panels/docs-panel';
-import { Pin, PinOff } from 'lucide-react';
+import NavPanel from '@/components/panels/nav-panel';
+import { useTheme } from '@/contexts/theme-context';
 
 const panels = [
     { label: 'Navigation', content: <NavPanel /> },

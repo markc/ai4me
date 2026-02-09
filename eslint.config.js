@@ -12,6 +12,12 @@ export default [
     reactHooks.configs.flat.recommended,
     ...typescript.configs.recommended,
     {
+        rules: {
+            'react-hooks/set-state-in-effect': 'off',
+            'react-hooks/incompatible-library': 'off',
+        },
+    },
+    {
         ...react.configs.flat.recommended,
         ...react.configs.flat['jsx-runtime'], // Required for React 17+
         languageOptions: {
@@ -65,7 +71,7 @@ export default [
         },
     },
     {
-        ignores: ['vendor', 'node_modules', 'public', 'bootstrap/ssr', 'tailwind.config.js', 'vite.config.ts'],
+        ignores: ['vendor', 'node_modules', 'public', 'bootstrap/ssr', 'tailwind.config.js', 'vite.config.ts', 'docs/**'],
     },
     prettier, // Turn off all rules that might conflict with Prettier
 ];

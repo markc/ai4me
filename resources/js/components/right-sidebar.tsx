@@ -1,8 +1,8 @@
-import { useTheme } from '@/contexts/theme-context';
+import { Pin, PinOff } from 'lucide-react';
 import PanelCarousel from '@/components/panel-carousel';
 import ThemePanel from '@/components/panels/theme-panel';
 import UsagePanel from '@/components/panels/usage-panel';
-import { Pin, PinOff } from 'lucide-react';
+import { useTheme } from '@/contexts/theme-context';
 
 const panels = [
     { label: 'Theme', content: <ThemePanel /> },

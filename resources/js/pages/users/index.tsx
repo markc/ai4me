@@ -1,6 +1,6 @@
+import { Head, usePage } from '@inertiajs/react';
 import { DataTable } from '@/components/data-table/data-table';
 import { columns, type User } from './columns';
-import { Head, usePage } from '@inertiajs/react';
 
 type UsersPageProps = {
     users: User[];

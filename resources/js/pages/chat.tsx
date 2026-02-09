@@ -1,7 +1,7 @@
-import ChatInterface from '@/components/chat/chat-interface';
-import { useTheme } from '@/contexts/theme-context';
 import { Head, usePage } from '@inertiajs/react';
 import { useLayoutEffect } from 'react';
+import ChatInterface from '@/components/chat/chat-interface';
+import { useTheme } from '@/contexts/theme-context';
 import type { ConversationWithMessages, SystemPromptTemplate } from '@/types/chat';
 
 type ChatPageProps = {

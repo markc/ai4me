@@ -18,8 +18,10 @@ createInertiaApp({
             import.meta.glob('./pages/**/*.tsx'),
         );
         // Apply persistent layout to app pages (not auth or welcome)
-        if (!(page as any).default.layout && !name.startsWith('auth/') && name !== 'welcome') {
-            (page as any).default.layout = defaultLayout;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const mod = page as any;
+        if (!mod.default.layout && !name.startsWith('auth/') && name !== 'welcome') {
+            mod.default.layout = defaultLayout;
         }
         return page;
     },

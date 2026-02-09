@@ -1,9 +1,9 @@
+import { Menu } from 'lucide-react';
+import type { ReactNode } from 'react';
 import LeftSidebar from '@/components/left-sidebar';
 import RightSidebar from '@/components/right-sidebar';
 import TopNav from '@/components/top-nav';
 import { ThemeProvider, useTheme } from '@/contexts/theme-context';
-import { Menu } from 'lucide-react';
-import type { ReactNode } from 'react';
 
 function LayoutContent({ children }: { children: ReactNode }) {
     const { left, right, noPadding, toggleSidebar } = useTheme();

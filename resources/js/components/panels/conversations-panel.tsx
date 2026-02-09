@@ -1,7 +1,7 @@
-import { useState } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
-import { cn } from '@/lib/utils';
 import { Download, MessageSquare, Plus, Search, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { cn } from '@/lib/utils';
 import type { Conversation } from '@/types/chat';
 
 export default function ConversationsPanel() {

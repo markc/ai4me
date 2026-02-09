@@ -1,9 +1,9 @@
 import { Deferred, Head, useForm, usePage, router } from '@inertiajs/react';
-import type { SystemPromptTemplate } from '@/types/chat';
 import { type ColumnDef } from '@tanstack/react-table';
-import { DataTable } from '@/components/data-table/data-table';
-import { useState } from 'react';
 import { MessageSquare, Hash, Coins, Cpu, Pencil, Trash2, Plus, Check, X, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { DataTable } from '@/components/data-table/data-table';
+import type { SystemPromptTemplate } from '@/types/chat';
 
 type CostByModel = {
     model: string;

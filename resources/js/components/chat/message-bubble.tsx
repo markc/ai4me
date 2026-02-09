@@ -1,8 +1,8 @@
-import type { Message } from '@/types/chat';
-import { Streamdown } from 'streamdown';
 import { createCodePlugin } from '@streamdown/code';
 import { FileText, Copy, Download, Check } from 'lucide-react';
 import { useState, useCallback } from 'react';
+import { Streamdown } from 'streamdown';
+import type { Message } from '@/types/chat';
 
 interface MessageBubbleProps {
     message: Message;
