@@ -5,15 +5,15 @@
 
 /* === Light Theme (Crimson - Default) === */
 :root {
-    /* Hue: 25 (warm red) | Chroma: 0.15+ (vibrant) */
+    /* Hue: 30 (true red) | Chroma: 0.2 (vibrant) */
     --bg-primary:   oklch(98% 0.005 25);
     --bg-secondary: oklch(96% 0.008 25);
     --bg-tertiary:  oklch(92% 0.012 25);
     --fg-primary:   oklch(25% 0.04 25);
     --fg-secondary: oklch(40% 0.06 25);
     --fg-muted:     oklch(55% 0.04 25);
-    --accent:       oklch(47% 0.2 25);
-    --accent-hover: oklch(42% 0.22 25);
+    --accent:       oklch(50.5% 0.197 30);
+    --accent-hover: oklch(45% 0.22 30);
     --accent-fg:    oklch(98% 0.005 25);
     --accent-subtle:oklch(92% 0.03 25);
     --border:       oklch(85% 0.015 25);
@@ -34,8 +34,8 @@
         --fg-primary:   oklch(95% 0.015 25);
         --fg-secondary: oklch(75% 0.04 25);
         --fg-muted:     oklch(55% 0.03 25);
-        --accent:       oklch(70% 0.18 25);
-        --accent-hover: oklch(80% 0.15 25);
+        --accent:       oklch(57% 0.221 30);
+        --accent-hover: oklch(63% 0.2 30);
         --accent-fg:    oklch(15% 0.04 25);
         --accent-subtle:oklch(25% 0.04 25);
         --border:       oklch(30% 0.025 25);
@@ -56,8 +56,8 @@ html.dark {
     --fg-primary:   oklch(95% 0.015 25);
     --fg-secondary: oklch(75% 0.04 25);
     --fg-muted:     oklch(55% 0.03 25);
-    --accent:       oklch(70% 0.18 25);
-    --accent-hover: oklch(80% 0.15 25);
+    --accent:       oklch(57% 0.221 30);
+    --accent-hover: oklch(63% 0.2 30);
     --accent-fg:    oklch(15% 0.04 25);
     --accent-subtle:oklch(25% 0.04 25);
     --border:       oklch(30% 0.025 25);
@@ -218,6 +218,21 @@ html.dark {
 }
 .sidebar-left { border-inline-end: 1px solid transparent; }
 .sidebar-right { border-inline-start: 1px solid transparent; }
+/* Inner-edge border: starts below carousel-header, extends full height on scroll */
+.sidebar-left::after,
+.sidebar-right::after {
+    content: '';
+    position: absolute;
+    top: var(--topnav-height);
+    bottom: 0;
+    width: 1px;
+    background: var(--border);
+    transition: top var(--transition-slow);
+}
+.sidebar-left::after { right: 0; }
+.sidebar-right::after { left: 0; }
+body.scrolled .sidebar-left::after,
+body.scrolled .sidebar-right::after { top: 0; }
 body.scrolled .sidebar-left { border-inline-end-color: var(--border); }
 body.scrolled .sidebar-right { border-inline-start-color: var(--border); }
 main {
@@ -241,12 +256,22 @@ main {
 .hamburger:hover { color: var(--accent); }
 .hamburger-left { top: var(--space-3); left: var(--space-3); }
 .hamburger-right { top: var(--space-3); right: var(--space-3); }
-.carousel-header {
-    justify-content: center;
+/* Carousel header: pin + carousel-nav grouped next to hamburger */
+.sidebar-left .carousel-header {
+    justify-content: flex-start;
+    gap: var(--space-1);
+    padding-inline-start: 3.75rem; /* clear the floating hamburger */
+}
+.sidebar-right .carousel-header {
+    justify-content: flex-end;
+    gap: var(--space-1);
+    padding-inline-end: 3.75rem; /* clear the floating hamburger */
 }
 .carousel-header .pin-toggle {
     display: block;
-    font-size: var(--text-xl);
+    position: static;
+    transform: none;
+    font-size: var(--text-base);
 }
 .carousel-prev, .carousel-next {
     font-size: 22px;
