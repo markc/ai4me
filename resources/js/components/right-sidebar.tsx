@@ -1,20 +1,20 @@
-import { useTheme, type ColorScheme } from '@/contexts/theme-context';
+import { useTheme } from '@/contexts/theme-context';
+import PanelCarousel from '@/components/panel-carousel';
+import ThemePanel from '@/components/panels/theme-panel';
+import UsagePanel from '@/components/panels/usage-panel';
 import { Pin, PinOff } from 'lucide-react';
 
-const schemes: { id: ColorScheme; label: string; hue: string }[] = [
-    { id: 'crimson', label: 'Crimson', hue: 'oklch(47% 0.2 25)' },
-    { id: 'stone', label: 'Stone', hue: 'oklch(45% 0.05 60)' },
-    { id: 'ocean', label: 'Ocean', hue: 'oklch(50% 0.15 220)' },
-    { id: 'forest', label: 'Forest', hue: 'oklch(50% 0.12 150)' },
-    { id: 'sunset', label: 'Sunset', hue: 'oklch(60% 0.16 45)' },
+const panels = [
+    { label: 'Theme', content: <ThemePanel /> },
+    { label: 'Usage', content: <UsagePanel /> },
 ];
 
 export default function RightSidebar() {
-    const { right, scheme, theme, setScheme, toggleTheme, pinSidebar } = useTheme();
+    const { right, pinSidebar, setPanel } = useTheme();
 
     return (
         <aside
-            className={`sidebar-slide fixed top-0 right-0 z-40 flex h-screen w-[var(--sidebar-width)] flex-col overflow-y-auto border-l ${
+            className={`sidebar-slide fixed top-0 right-0 z-40 flex h-screen w-[var(--sidebar-width)] flex-col border-l ${
                 right.open ? 'translate-x-0' : 'translate-x-full'
             }`}
             style={{
@@ -24,73 +24,22 @@ export default function RightSidebar() {
                 borderColor: 'var(--glass-border)',
             }}
         >
-            <div className="flex h-[var(--topnav-height)] shrink-0 items-center border-b px-3" style={{ borderColor: 'var(--glass-border)' }}>
-                <button
-                    onClick={() => pinSidebar('right')}
-                    className="hidden rounded p-1 transition-colors hover:bg-background xl:block"
-                    style={{ color: right.pinned ? 'var(--scheme-accent)' : 'var(--scheme-fg-muted)' }}
-                    aria-label={right.pinned ? 'Unpin sidebar' : 'Pin sidebar'}
-                >
-                    {right.pinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
-                </button>
-                <span className="flex-1 text-center text-sm" style={{ color: 'var(--scheme-fg-muted)' }}>Theme</span>
-                <div className="w-8" />
-            </div>
-
-            <div className="flex flex-col gap-4 p-4">
-                <div>
-                    <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--scheme-fg-muted)' }}>
-                        Color Scheme
-                    </h3>
-                    <div className="flex flex-col gap-1.5">
-                        {schemes.map(s => (
-                            <button
-                                key={s.id}
-                                onClick={() => setScheme(s.id)}
-                                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
-                                    scheme === s.id ? 'ring-2' : 'hover:bg-background'
-                                }`}
-                                style={{
-                                    ringColor: scheme === s.id ? s.hue : undefined,
-                                    color: scheme === s.id ? s.hue : 'var(--scheme-fg-secondary)',
-                                }}
-                            >
-                                <span
-                                    className="h-4 w-4 rounded-full"
-                                    style={{ backgroundColor: s.hue }}
-                                />
-                                {s.label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="border-t pt-4" style={{ borderColor: 'var(--glass-border)' }}>
-                    <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--scheme-fg-muted)' }}>
-                        Appearance
-                    </h3>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => { if (theme !== 'light') toggleTheme(); }}
-                            className={`flex-1 rounded-lg px-3 py-2 text-sm transition-colors ${
-                                theme === 'light' ? 'bg-background font-medium' : 'hover:bg-background'
-                            }`}
-                            style={{ color: theme === 'light' ? 'var(--scheme-accent)' : 'var(--scheme-fg-secondary)' }}
-                        >
-                            Light
-                        </button>
-                        <button
-                            onClick={() => { if (theme !== 'dark') toggleTheme(); }}
-                            className={`flex-1 rounded-lg px-3 py-2 text-sm transition-colors ${
-                                theme === 'dark' ? 'bg-background font-medium' : 'hover:bg-background'
-                            }`}
-                            style={{ color: theme === 'dark' ? 'var(--scheme-accent)' : 'var(--scheme-fg-secondary)' }}
-                        >
-                            Dark
-                        </button>
-                    </div>
-                </div>
-            </div>
+            <PanelCarousel
+                panels={panels}
+                activePanel={right.panel}
+                onPanelChange={(i) => setPanel('right', i)}
+                headerLeft={
+                    <button
+                        onClick={() => pinSidebar('right')}
+                        className="hidden rounded p-1 transition-colors hover:bg-background xl:block"
+                        style={{ color: right.pinned ? 'var(--scheme-accent)' : 'var(--scheme-fg-muted)' }}
+                        aria-label={right.pinned ? 'Unpin sidebar' : 'Pin sidebar'}
+                    >
+                        {right.pinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
+                    </button>
+                }
+                headerRight={<div className="w-8" />}
+            />
         </aside>
     );
 }

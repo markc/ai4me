@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Conversation;
+use App\Models\Message;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -35,13 +37,79 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $user,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'sidebarConversations' => fn () => $user
+                ? Conversation::where('user_id', $user->id)
+                    ->select(['id', 'title', 'model', 'updated_at'])
+                    ->latest('updated_at')
+                    ->limit(50)
+                    ->get()
+                : [],
+            'sidebarStats' => $user ? $this->buildStats($user) : null,
+        ];
+    }
+
+    private function buildStats($user): array
+    {
+        $conversationIds = Conversation::where('user_id', $user->id)->pluck('id');
+        $conversationCount = $conversationIds->count();
+
+        if ($conversationCount === 0) {
+            return [
+                'conversations' => 0,
+                'messages' => 0,
+                'inputTokens' => 0,
+                'outputTokens' => 0,
+                'totalCost' => 0,
+                'costByModel' => [],
+            ];
+        }
+
+        $messageCount = Message::whereIn('conversation_id', $conversationIds)->count();
+        $inputTokens = (int) Message::whereIn('conversation_id', $conversationIds)->sum('input_tokens');
+        $outputTokens = (int) Message::whereIn('conversation_id', $conversationIds)->sum('output_tokens');
+
+        $pricing = config('ai.pricing');
+        $costByModel = [];
+        $totalCost = 0;
+
+        $tokensByModel = Message::whereIn('conversation_id', $conversationIds)
+            ->join('conversations', 'messages.conversation_id', '=', 'conversations.id')
+            ->selectRaw('conversations.model, SUM(messages.input_tokens) as input_sum, SUM(messages.output_tokens) as output_sum')
+            ->groupBy('conversations.model')
+            ->get();
+
+        foreach ($tokensByModel as $row) {
+            $rates = $pricing[$row->model] ?? null;
+            $cost = $rates
+                ? ($row->input_sum / 1_000_000 * $rates[0]) + ($row->output_sum / 1_000_000 * $rates[1])
+                : 0;
+            $totalCost += $cost;
+            $costByModel[] = [
+                'model' => $row->model,
+                'input_tokens' => (int) $row->input_sum,
+                'output_tokens' => (int) $row->output_sum,
+                'cost' => round($cost, 4),
+            ];
+        }
+
+        usort($costByModel, fn ($a, $b) => $b['cost'] <=> $a['cost']);
+
+        return [
+            'conversations' => $conversationCount,
+            'messages' => $messageCount,
+            'inputTokens' => $inputTokens,
+            'outputTokens' => $outputTokens,
+            'totalCost' => round($totalCost, 4),
+            'costByModel' => $costByModel,
         ];
     }
 }

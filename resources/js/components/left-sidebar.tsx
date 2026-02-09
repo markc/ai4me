@@ -1,20 +1,20 @@
 import { useTheme } from '@/contexts/theme-context';
-import { Link, usePage } from '@inertiajs/react';
-import { Home, MessageSquare, Pin, PinOff, Users } from 'lucide-react';
+import PanelCarousel from '@/components/panel-carousel';
+import NavPanel from '@/components/panels/nav-panel';
+import ConversationsPanel from '@/components/panels/conversations-panel';
+import { Pin, PinOff } from 'lucide-react';
 
-const navItems = [
-    { href: '/dashboard', label: 'Dashboard', icon: Home },
-    { href: '/chat', label: 'AI Chat', icon: MessageSquare },
-    { href: '/users', label: 'Users', icon: Users },
+const panels = [
+    { label: 'Navigation', content: <NavPanel /> },
+    { label: 'Conversations', content: <ConversationsPanel /> },
 ];
 
 export default function LeftSidebar() {
-    const { left, pinSidebar } = useTheme();
-    const { url } = usePage();
+    const { left, pinSidebar, setPanel } = useTheme();
 
     return (
         <aside
-            className={`sidebar-slide fixed top-0 left-0 z-40 flex h-screen w-[var(--sidebar-width)] flex-col overflow-y-auto border-r ${
+            className={`sidebar-slide fixed top-0 left-0 z-40 flex h-screen w-[var(--sidebar-width)] flex-col border-r ${
                 left.open ? 'translate-x-0' : '-translate-x-full'
             }`}
             style={{
@@ -24,40 +24,22 @@ export default function LeftSidebar() {
                 borderColor: 'var(--glass-border)',
             }}
         >
-            <div className="flex h-[var(--topnav-height)] shrink-0 items-center border-b px-3" style={{ borderColor: 'var(--glass-border)' }}>
-                <div className="w-8" />
-                <span className="flex-1 text-center text-sm" style={{ color: 'var(--scheme-fg-muted)' }}>Navigation</span>
-                <button
-                    onClick={() => pinSidebar('left')}
-                    className="hidden rounded p-1 transition-colors hover:bg-background xl:block"
-                    style={{ color: left.pinned ? 'var(--scheme-accent)' : 'var(--scheme-fg-muted)' }}
-                    aria-label={left.pinned ? 'Unpin sidebar' : 'Pin sidebar'}
-                >
-                    {left.pinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
-                </button>
-            </div>
-
-            <nav className="flex flex-col py-2">
-                {navItems.map(item => {
-                    const isActive = url.startsWith(item.href);
-                    return (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            prefetch
-                            className={`flex items-center gap-3 border-l-[3px] px-3 py-2 text-sm transition-colors ${
-                                isActive
-                                    ? 'border-[var(--scheme-accent)] bg-background text-[var(--scheme-accent)]'
-                                    : 'border-transparent hover:border-muted-foreground hover:bg-background'
-                            }`}
-                            style={{ color: isActive ? 'var(--scheme-accent)' : undefined }}
-                        >
-                            <item.icon className="h-4 w-4" />
-                            {item.label}
-                        </Link>
-                    );
-                })}
-            </nav>
+            <PanelCarousel
+                panels={panels}
+                activePanel={left.panel}
+                onPanelChange={(i) => setPanel('left', i)}
+                headerLeft={<div className="w-8" />}
+                headerRight={
+                    <button
+                        onClick={() => pinSidebar('left')}
+                        className="hidden rounded p-1 transition-colors hover:bg-background xl:block"
+                        style={{ color: left.pinned ? 'var(--scheme-accent)' : 'var(--scheme-fg-muted)' }}
+                        aria-label={left.pinned ? 'Unpin sidebar' : 'Pin sidebar'}
+                    >
+                        {left.pinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
+                    </button>
+                }
+            />
         </aside>
     );
 }

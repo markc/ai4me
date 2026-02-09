@@ -25,9 +25,6 @@ class ChatController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $conversations = $user->conversations()
-            ->latest()
-            ->get(['id', 'title', 'model', 'updated_at']);
 
         $templates = SystemPromptTemplate::where('user_id', $user->id)
             ->orWhereNull('user_id')
@@ -36,7 +33,6 @@ class ChatController extends Controller
             ->get();
 
         return Inertia::render('chat', [
-            'conversations' => $conversations,
             'conversation' => null,
             'templates' => $templates,
         ]);
@@ -52,9 +48,6 @@ class ChatController extends Controller
         $conversation->messages->each(fn ($msg) => $msg->setRelation('conversation', $conversation));
 
         $user = Auth::user();
-        $conversations = $user->conversations()
-            ->latest()
-            ->get(['id', 'title', 'model', 'updated_at']);
 
         $templates = SystemPromptTemplate::where('user_id', $user->id)
             ->orWhereNull('user_id')
@@ -63,7 +56,6 @@ class ChatController extends Controller
             ->get();
 
         return Inertia::render('chat', [
-            'conversations' => $conversations,
             'conversation' => $conversation,
             'templates' => $templates,
         ]);

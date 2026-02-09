@@ -3,15 +3,15 @@
 ## Project Overview
 
 ai4me is a Laravel 12 + Inertia 2 + React 19 application featuring:
-- Dual sidebar layout (ported from rentanet)
-- ChatGPT-style AI chat using the Laravel AI SDK with Anthropic Claude
+- **Dual Carousel Sidebars (DCS)** — Multi-panel sliding sidebars with glassmorphism
+- ChatGPT-style AI chat with multi-provider LLM support (Anthropic, OpenAI, Gemini)
 - Reusable admin datatables via TanStack Table
 
 ## Tech Stack
 
 - PHP 8.4+, Laravel 12, Inertia 2
 - React 19, TypeScript, Tailwind CSS 4
-- Laravel AI SDK (`laravel/ai`) with Anthropic provider
+- Prism PHP (`prism-php/prism`) for LLM integration
 - `@laravel/stream-react` for SSE streaming
 - `streamdown` + `@streamdown/code` for markdown rendering
 - `@tanstack/react-table` for datatables
@@ -28,18 +28,36 @@ php artisan migrate:fresh   # Reset database
 
 ## Architecture
 
-- Layout: Dual sidebar with oklch color schemes (crimson/stone/ocean/forest/sunset)
-- Chat: SSE streaming via `/chat/stream`, conversations persisted per-user
-- Theme: 5 color schemes + dark/light mode, persisted to localStorage
+### DCS Layout
+
+Each sidebar has 2+ panels navigable via `< [dot·dot] >` carousel controls:
+- **Left:** Navigation (panel 0), Conversations (panel 1)
+- **Right:** Theme (panel 0), Usage Stats (panel 1)
+
+Key files: `panel-carousel.tsx`, `components/panels/`, `theme-context.tsx`
+
+### Shared Data
+
+`HandleInertiaRequests` middleware shares `sidebarConversations` (eager) and `sidebarStats` (eager) globally. Chat page no longer passes its own conversations prop.
+
+### Theme System
+
+5 OKLCH color schemes (crimson/stone/ocean/forest/sunset) + dark/light mode, persisted to `base-state` localStorage key. Panel indices also persisted.
 
 ## Environment
 
 - `ANTHROPIC_API_KEY` — required
-- Default provider: `anthropic` in `config/ai.php`
+- `OPENAI_API_KEY`, `GEMINI_API_KEY` — optional providers
 
 ## Conventions
 
 - React components in `resources/js/components/`
+- Panel components in `resources/js/components/panels/`
 - Pages in `resources/js/pages/` (Inertia file-based routing)
 - CSS custom properties in `resources/css/rentanet.css`
-- Theme state managed via React context + localStorage
+- Theme state managed via ThemeContext + localStorage
+- Docs in `docs/` (standalone SPA, GitHub Pages compatible)
+
+## Documentation
+
+See `docs/` for full DCS pattern documentation. Viewable at `/ai4me/docs/` via the unified dev server or GitHub Pages.

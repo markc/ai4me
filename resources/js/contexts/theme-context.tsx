@@ -6,6 +6,7 @@ export type ThemeMode = 'light' | 'dark';
 type SidebarState = {
     open: boolean;
     pinned: boolean;
+    panel: number;
 };
 
 type ThemeState = {
@@ -23,6 +24,7 @@ type ThemeContextValue = ThemeState & {
     toggleSidebar: (side: 'left' | 'right') => void;
     pinSidebar: (side: 'left' | 'right') => void;
     closeSidebars: () => void;
+    setPanel: (side: 'left' | 'right', index: number) => void;
 };
 
 const STORAGE_KEY = 'base-state';
@@ -30,9 +32,13 @@ const STORAGE_KEY = 'base-state';
 const defaults: ThemeState = {
     theme: 'dark',
     scheme: 'crimson',
-    left: { open: false, pinned: false },
-    right: { open: false, pinned: false },
+    left: { open: false, pinned: false, panel: 0 },
+    right: { open: false, pinned: false, panel: 0 },
 };
+
+function clampPanel(n: number): number {
+    return Math.max(0, Math.min(1, n));
+}
 
 function loadState(): ThemeState {
     if (typeof window === 'undefined') return defaults;
@@ -46,10 +52,12 @@ function loadState(): ThemeState {
             left: {
                 open: parsed.leftOpen ?? false,
                 pinned: parsed.leftPinned ?? false,
+                panel: clampPanel(parsed.leftPanel ?? 0),
             },
             right: {
                 open: parsed.rightOpen ?? false,
                 pinned: parsed.rightPinned ?? false,
+                panel: clampPanel(parsed.rightPanel ?? 0),
             },
         };
     } catch {
@@ -63,8 +71,10 @@ function saveState(state: ThemeState) {
         scheme: state.scheme,
         leftOpen: state.left.open,
         leftPinned: state.left.pinned,
+        leftPanel: state.left.panel,
         rightOpen: state.right.open,
         rightPinned: state.right.pinned,
+        rightPanel: state.right.panel,
     }));
 }
 
@@ -102,8 +112,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
             if (!e.matches) {
                 setState(prev => ({
                     ...prev,
-                    left: { open: false, pinned: false },
-                    right: { open: false, pinned: false },
+                    left: { ...prev.left, open: false, pinned: false },
+                    right: { ...prev.right, open: false, pinned: false },
                 }));
             }
         };
@@ -125,11 +135,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
             const current = prev[side];
             if (current.open) {
                 // Close and unpin
-                return { ...prev, [side]: { open: false, pinned: false } };
+                return { ...prev, [side]: { ...current, open: false, pinned: false } };
             }
             // Open this side, close non-pinned other
-            const otherState = prev[other].pinned ? prev[other] : { open: false, pinned: false };
-            return { ...prev, [side]: { open: true, pinned: current.pinned }, [other]: otherState };
+            const otherState = prev[other].pinned ? prev[other] : { ...prev[other], open: false, pinned: false };
+            return { ...prev, [side]: { ...current, open: true, pinned: current.pinned }, [other]: otherState };
         });
     }, []);
 
@@ -139,7 +149,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
             const pinning = !current.pinned;
             return {
                 ...prev,
-                [side]: { open: pinning, pinned: pinning },
+                [side]: { ...current, open: pinning, pinned: pinning },
             };
         });
     }, []);
@@ -147,13 +157,20 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const closeSidebars = useCallback(() => {
         setState(prev => ({
             ...prev,
-            left: prev.left.pinned ? prev.left : { open: false, pinned: false },
-            right: prev.right.pinned ? prev.right : { open: false, pinned: false },
+            left: prev.left.pinned ? prev.left : { ...prev.left, open: false, pinned: false },
+            right: prev.right.pinned ? prev.right : { ...prev.right, open: false, pinned: false },
+        }));
+    }, []);
+
+    const setPanel = useCallback((side: 'left' | 'right', index: number) => {
+        setState(prev => ({
+            ...prev,
+            [side]: { ...prev[side], panel: clampPanel(index) },
         }));
     }, []);
 
     return (
-        <ThemeContext.Provider value={{ ...state, noPadding, setNoPadding, toggleTheme, setScheme, toggleSidebar, pinSidebar, closeSidebars }}>
+        <ThemeContext.Provider value={{ ...state, noPadding, setNoPadding, toggleTheme, setScheme, toggleSidebar, pinSidebar, closeSidebars, setPanel }}>
             {children}
         </ThemeContext.Provider>
     );
