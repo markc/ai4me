@@ -44,7 +44,7 @@ const Base = {
     // Color scheme
     setScheme(scheme) {
         const html = document.documentElement;
-        ['ocean', 'forest', 'sunset'].forEach(s => html.classList.remove('scheme-' + s));
+        ['stone', 'ocean', 'forest', 'sunset'].forEach(s => html.classList.remove('scheme-' + s));
         if (scheme && scheme !== 'default') html.classList.add('scheme-' + scheme);
         this.state({ scheme: scheme || 'default' });
         document.querySelectorAll('[data-scheme]').forEach(el =>
