@@ -14,21 +14,21 @@ export default function RightSidebar() {
 
     return (
         <aside
-            className={`sidebar-slide fixed top-0 right-0 z-40 flex h-screen w-[var(--sidebar-width)] flex-col border-l ${
+            className={`sidebar-right sidebar-slide fixed top-0 right-0 z-40 flex h-screen w-[var(--sidebar-width)] flex-col ${
                 right.open ? 'translate-x-0' : 'translate-x-full'
             }`}
             style={{
                 background: 'var(--glass)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
-                borderColor: 'var(--glass-border)',
             }}
         >
             <PanelCarousel
                 panels={panels}
                 activePanel={right.panel}
                 onPanelChange={(i) => setPanel('right', i)}
-                headerLeft={
+                side="right"
+                headerSlot={
                     <button
                         onClick={() => pinSidebar('right')}
                         className="hidden rounded p-1 transition-colors hover:bg-background xl:block"
@@ -38,7 +38,6 @@ export default function RightSidebar() {
                         {right.pinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
                     </button>
                 }
-                headerRight={<div className="w-8" />}
             />
         </aside>
     );

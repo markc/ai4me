@@ -19,7 +19,7 @@ export default function DocsPage() {
     return (
         <>
             <Head title={doc?.title ?? 'Documentation'} />
-            <div className="mx-auto max-w-4xl px-6 py-8">
+            <div className="mx-auto max-w-4xl py-8 sm:px-6">
                 {doc ? (
                     <div className="prose prose-sm dark:prose-invert max-w-none">
                         <Streamdown

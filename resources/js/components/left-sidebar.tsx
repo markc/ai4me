@@ -16,22 +16,21 @@ export default function LeftSidebar() {
 
     return (
         <aside
-            className={`sidebar-slide fixed top-0 left-0 z-40 flex h-screen w-[var(--sidebar-width)] flex-col border-r ${
+            className={`sidebar-left sidebar-slide fixed top-0 left-0 z-40 flex h-screen w-[var(--sidebar-width)] flex-col ${
                 left.open ? 'translate-x-0' : '-translate-x-full'
             }`}
             style={{
                 background: 'var(--glass)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
-                borderColor: 'var(--glass-border)',
             }}
         >
             <PanelCarousel
                 panels={panels}
                 activePanel={left.panel}
                 onPanelChange={(i) => setPanel('left', i)}
-                headerLeft={<div className="w-8" />}
-                headerRight={
+                side="left"
+                headerSlot={
                     <button
                         onClick={() => pinSidebar('left')}
                         className="hidden rounded p-1 transition-colors hover:bg-background xl:block"
