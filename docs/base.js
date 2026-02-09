@@ -282,6 +282,11 @@ const Base = {
         // Lucide icons
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
+        // Scroll-driven sidebar borders
+        const onScroll = () => document.body.classList.toggle('scrolled', window.scrollY > 0);
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+
         // Remove preload class to enable transitions (after state restored)
         requestAnimationFrame(() => document.documentElement.classList.remove('preload'));
     }

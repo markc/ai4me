@@ -216,6 +216,10 @@ html.dark {
     height: 100vh;
     height: 100dvh;
 }
+.sidebar-left { border-inline-end: 1px solid transparent; }
+.sidebar-right { border-inline-start: 1px solid transparent; }
+body.scrolled .sidebar-left { border-inline-end-color: var(--border); }
+body.scrolled .sidebar-right { border-inline-start-color: var(--border); }
 main {
     margin-block-start: 0;
 }

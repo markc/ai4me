@@ -356,13 +356,15 @@
         display: flex;
         flex-direction: column;
         z-index: var(--z-fixed);
-        transition: transform var(--transition-slow);
+        transition: transform var(--transition-slow), border-color 0.3s;
         overflow-y: auto;
     }
 
-    .sidebar-left { left: 0; transform: translateX(-100%); border-inline-end: 1px solid var(--border); }
-    .sidebar-right { right: 0; transform: translateX(100%); border-inline-start: 1px solid var(--border); }
+    .sidebar-left { left: 0; transform: translateX(-100%); border-inline-end: 1px solid transparent; }
+    .sidebar-right { right: 0; transform: translateX(100%); border-inline-start: 1px solid transparent; }
     .sidebar.open { transform: translateX(0); }
+    body.scrolled .sidebar-left { border-inline-end-color: var(--border); }
+    body.scrolled .sidebar-right { border-inline-start-color: var(--border); }
 
     .sidebar-header {
         display: flex;
