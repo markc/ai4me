@@ -1,9 +1,10 @@
 import { Link, usePage } from '@inertiajs/react';
-import { Home, MessageSquare, Users } from 'lucide-react';
+import { FileText, Home, MessageSquare, Users } from 'lucide-react';
 
 const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: Home },
     { href: '/chat', label: 'AI Chat', icon: MessageSquare },
+    { href: '/docs', label: 'Docs', icon: FileText },
     { href: '/users', label: 'Users', icon: Users },
 ];
 

@@ -2,11 +2,13 @@ import { useTheme } from '@/contexts/theme-context';
 import PanelCarousel from '@/components/panel-carousel';
 import NavPanel from '@/components/panels/nav-panel';
 import ConversationsPanel from '@/components/panels/conversations-panel';
+import DocsPanel from '@/components/panels/docs-panel';
 import { Pin, PinOff } from 'lucide-react';
 
 const panels = [
     { label: 'Navigation', content: <NavPanel /> },
     { label: 'Conversations', content: <ConversationsPanel /> },
+    { label: 'Docs', content: <DocsPanel /> },
 ];
 
 export default function LeftSidebar() {

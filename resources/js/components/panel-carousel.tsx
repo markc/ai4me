@@ -15,8 +15,9 @@ type PanelCarouselProps = {
 };
 
 export default function PanelCarousel({ panels, activePanel, onPanelChange, headerLeft, headerRight }: PanelCarouselProps) {
-    const canPrev = activePanel > 0;
-    const canNext = activePanel < panels.length - 1;
+    const len = panels.length;
+    const prev = (activePanel - 1 + len) % len;
+    const next = (activePanel + 1) % len;
 
     return (
         <>
@@ -25,11 +26,10 @@ export default function PanelCarousel({ panels, activePanel, onPanelChange, head
                 {headerLeft}
                 <div className="flex flex-1 items-center justify-center gap-1.5">
                     <button
-                        onClick={() => canPrev && onPanelChange(activePanel - 1)}
+                        onClick={() => onPanelChange(prev)}
                         className="rounded p-0.5 transition-colors hover:bg-background"
-                        style={{ color: canPrev ? 'var(--scheme-fg-muted)' : 'transparent', cursor: canPrev ? 'pointer' : 'default' }}
+                        style={{ color: 'var(--scheme-fg-muted)' }}
                         aria-label="Previous panel"
-                        tabIndex={canPrev ? 0 : -1}
                     >
                         <ChevronLeft className="h-3.5 w-3.5" />
                     </button>
@@ -51,11 +51,10 @@ export default function PanelCarousel({ panels, activePanel, onPanelChange, head
                         ))}
                     </div>
                     <button
-                        onClick={() => canNext && onPanelChange(activePanel + 1)}
+                        onClick={() => onPanelChange(next)}
                         className="rounded p-0.5 transition-colors hover:bg-background"
-                        style={{ color: canNext ? 'var(--scheme-fg-muted)' : 'transparent', cursor: canNext ? 'pointer' : 'default' }}
+                        style={{ color: 'var(--scheme-fg-muted)' }}
                         aria-label="Next panel"
-                        tabIndex={canNext ? 0 : -1}
                     >
                         <ChevronRight className="h-3.5 w-3.5" />
                     </button>

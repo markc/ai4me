@@ -26,6 +26,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('templates/{template}', [App\Http\Controllers\SystemPromptTemplateController::class, 'update'])->name('templates.update');
     Route::delete('templates/{template}', [App\Http\Controllers\SystemPromptTemplateController::class, 'destroy'])->name('templates.destroy');
 
+    Route::get('docs', [App\Http\Controllers\DocsController::class, 'index'])->name('docs.index');
+    Route::get('docs/{slug}', [App\Http\Controllers\DocsController::class, 'show'])->name('docs.show');
+
     Route::get('users', [App\Http\Controllers\UserController::class, 'index'])->name('users.index');
 });
 

@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\Conversation;
 use App\Models\Message;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -54,6 +55,7 @@ class HandleInertiaRequests extends Middleware
                     ->get()
                 : [],
             'sidebarStats' => $user ? $this->buildStats($user) : null,
+            'sidebarDocs' => $this->buildDocs(),
         ];
     }
 
@@ -111,5 +113,32 @@ class HandleInertiaRequests extends Middleware
             'totalCost' => round($totalCost, 4),
             'costByModel' => $costByModel,
         ];
+    }
+
+    private function buildDocs(): array
+    {
+        $docsPath = base_path('docs');
+
+        if (! File::isDirectory($docsPath)) {
+            return [];
+        }
+
+        $docs = [];
+
+        foreach (File::glob("{$docsPath}/*.md") as $file) {
+            $slug = pathinfo($file, PATHINFO_FILENAME);
+            $content = File::get($file);
+            $title = $slug;
+
+            if (preg_match('/^#\s+(.+)$/m', $content, $matches)) {
+                $title = $matches[1];
+            }
+
+            $docs[] = ['slug' => $slug, 'title' => $title];
+        }
+
+        usort($docs, fn ($a, $b) => $a['title'] <=> $b['title']);
+
+        return $docs;
     }
 }
