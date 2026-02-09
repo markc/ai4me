@@ -34,7 +34,11 @@ function md(s) {
     });
 
     // Block elements
-    s = s.replace(/^(#{1,6})\s+(.+)$/gm, (_, h, t) => `${L}h${h.length}${R}${t.trim()}${L}/h${h.length}${R}`);
+    s = s.replace(/^(#{1,6})\s+(.+)$/gm, (_, h, t) => {
+        const text = t.trim();
+        const slug = text.replace(/[*_`~\[\]()]/g, '').toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-').replace(/^-+|-+$/g, '');
+        return `${L}h${h.length} id="${slug}"${R}${text}${L}/h${h.length}${R}`;
+    });
     s = s.replace(/^[-*_]{3,}\s*$/gm, `${L}hr${R}`);
     s = s.replace(/^>\s*(.+)$/gm, `${L}blockquote${R}$1${L}/blockquote${R}`);
 
@@ -79,6 +83,19 @@ async function loadDoc(path) {
         content.innerHTML = md(await res.text());
         document.querySelectorAll('[data-path]').forEach(a => a.classList.toggle('active', a.dataset.path === path));
         history.pushState({path}, '', `#${path}`);
+        // Build TOC from rendered headings
+        const toc = document.getElementById('toc-panel');
+        if (toc) {
+            const headings = content.querySelectorAll('h1, h2, h3');
+            if (headings.length) {
+                toc.innerHTML = [...headings].map(h => {
+                    const indent = (parseInt(h.tagName[1]) - 1) * 16;
+                    return `<a href="#" data-heading="${h.id}" style="padding-inline-start: calc(var(--space-3) + ${indent}px)">${h.textContent}</a>`;
+                }).join('');
+            } else {
+                toc.innerHTML = '<p class="text-muted text-sm" style="padding: var(--space-3)">No headings found.</p>';
+            }
+        }
     } catch (e) {
         content.innerHTML = `<p>Error: ${e.message}</p>`;
     }

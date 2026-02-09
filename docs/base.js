@@ -41,6 +41,21 @@ const Base = {
         }
     },
 
+    // Carousel: set active panel
+    setPanelIndex(side, index) {
+        const sb = document.querySelector(`.sidebar-${side}`);
+        if (!sb) return;
+        const track = sb.querySelector('.carousel-track');
+        const dots = sb.querySelectorAll('.carousel-dot');
+        const panels = sb.querySelectorAll('.carousel-panel');
+        if (!track || !panels.length) return;
+        const len = panels.length;
+        index = ((index % len) + len) % len;
+        track.style.transform = `translateX(-${index * 100}%)`;
+        dots.forEach((d, i) => d.classList.toggle('active', i === index));
+        this.state({ [side + 'Panel']: index });
+    },
+
     // Color scheme
     setScheme(scheme) {
         const html = document.documentElement;
@@ -63,23 +78,28 @@ const Base = {
         setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, ms);
     },
 
-    // Sidebar: toggle open/close
+    // Sidebar: toggle open/close (independent per side)
     toggleSidebar(side) {
         const sb = document.querySelector(`.sidebar-${side}`);
         if (!sb) return;
         const opening = !sb.classList.contains('open');
-        // Close all non-pinned sidebars first
-        document.querySelectorAll('.sidebar.open:not(.pinned)').forEach(s => s.classList.remove('open'));
         if (opening) {
             sb.classList.add('open');
             document.body.classList.add('sidebar-open');
             this.state({ [side + 'Open']: true });
         } else {
-            // Also unpin if pinned
             sb.classList.remove('open', 'pinned');
             document.body.classList.remove(side + '-pinned');
             if (!document.querySelector('.sidebar.open')) document.body.classList.remove('sidebar-open');
             this.state({ [side + 'Open']: false, [side + 'Pinned']: false });
+            // Reset pin icon to unpinned state
+            const icon = sb.querySelector('.pin-toggle [data-lucide], .pin-toggle svg');
+            if (icon && typeof lucide !== 'undefined') {
+                const i = document.createElement('i');
+                i.setAttribute('data-lucide', 'pin');
+                icon.replaceWith(i);
+                lucide.createIcons({ nodes: [i] });
+            }
         }
     },
 
@@ -124,9 +144,15 @@ const Base = {
             sb.classList.toggle('open', open);
             document.body.classList.toggle(side + '-pinned', pinned);
             if (open) document.body.classList.add('sidebar-open');
-            // Set correct pin icon
+            // Set correct pin icon for both states
             const icon = sb.querySelector('.pin-toggle [data-lucide], .pin-toggle svg');
-            if (icon && pinned) icon.setAttribute('data-lucide', 'pin-off');
+            if (icon) icon.setAttribute('data-lucide', pinned ? 'pin-off' : 'pin');
+        });
+
+        // Restore carousel panels
+        ['left', 'right'].forEach(side => {
+            const idx = s[side + 'Panel'] || 0;
+            if (idx) this.setPanelIndex(side, idx);
         });
     },
 
@@ -147,6 +173,35 @@ const Base = {
 
             // Theme toggle
             if (t.closest('.theme-toggle')) { this.toggleTheme(); return; }
+
+            // Carousel navigation
+            const prevBtn = t.closest('.carousel-prev');
+            if (prevBtn) {
+                const side = prevBtn.closest('.sidebar-left') ? 'left' : 'right';
+                this.setPanelIndex(side, (this.state()[side + 'Panel'] || 0) - 1);
+                return;
+            }
+            const nextBtn = t.closest('.carousel-next');
+            if (nextBtn) {
+                const side = nextBtn.closest('.sidebar-left') ? 'left' : 'right';
+                this.setPanelIndex(side, (this.state()[side + 'Panel'] || 0) + 1);
+                return;
+            }
+            const dot = t.closest('.carousel-dot');
+            if (dot) {
+                const side = dot.closest('.sidebar-left') ? 'left' : 'right';
+                this.setPanelIndex(side, [...dot.parentElement.children].indexOf(dot));
+                return;
+            }
+
+            // TOC heading link
+            const headingLink = t.closest('[data-heading]');
+            if (headingLink) {
+                e.preventDefault();
+                const target = document.getElementById(headingLink.dataset.heading);
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                return;
+            }
 
             // Scheme selector
             const scheme = t.closest('[data-scheme]');

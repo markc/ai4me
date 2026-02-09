@@ -205,6 +205,57 @@ html.dark {
     --glass-border: oklch(30% 0.035 45 / 0.5);
 }
 
+/* === Layout overrides: non-fixed topnav, full-height sidebars === */
+.topnav {
+    position: static;
+    justify-content: center;
+    z-index: auto;
+}
+.sidebar {
+    top: 0;
+    height: 100vh;
+    height: 100dvh;
+}
+main {
+    margin-block-start: 0;
+}
+.hamburger {
+    display: block !important;
+    position: fixed;
+    z-index: 500;
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--text-xl);
+    color: var(--fg-primary);
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: color var(--transition-fast);
+}
+.hamburger:hover { color: var(--accent); }
+.hamburger-left { top: var(--space-3); left: var(--space-3); }
+.hamburger-right { top: var(--space-3); right: var(--space-3); }
+.carousel-header {
+    justify-content: center;
+}
+.carousel-header .pin-toggle {
+    display: block;
+    font-size: var(--text-xl);
+}
+.carousel-prev, .carousel-next {
+    font-size: 22px;
+}
+.carousel-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 5px;
+}
+.carousel-dot.active {
+    width: 24px;
+}
+
 /* === Chapter table (reused from SPE) === */
 .chapter-table { width: 100%; border-collapse: collapse; }
 .chapter-table td { padding: var(--space-3) var(--space-4); border-block-end: 1px solid var(--border); vertical-align: top; }
