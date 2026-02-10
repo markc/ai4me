@@ -194,6 +194,7 @@ export default function MessageBubble({ message, isStreaming = false, onEdit, on
                         <Streamdown
                             mode={isStreaming ? 'typewriter' : 'static'}
                             plugins={[createCodePlugin({ theme: 'github-dark' })]}
+                            linkSafety={{ enabled: false }}
                         >
                             {message.content}
                         </Streamdown>
