@@ -369,7 +369,7 @@ class ChatController extends Controller
             }
 
             $process = new Process(
-                ['claude', '-p', $prompt, '--no-session-persistence', '--output-format', 'text'],
+                ['claude', '-p', $prompt, '--no-session-persistence', '--output-format', 'text', '--dangerously-skip-permissions'],
                 $projectDir,
                 null,
                 null,
