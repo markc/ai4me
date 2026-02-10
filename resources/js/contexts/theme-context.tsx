@@ -131,15 +131,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
     const toggleSidebar = useCallback((side: 'left' | 'right') => {
         setState(prev => {
-            const other = side === 'left' ? 'right' : 'left';
             const current = prev[side];
             if (current.open) {
-                // Close and unpin
                 return { ...prev, [side]: { ...current, open: false, pinned: false } };
             }
-            // Open this side, close non-pinned other
-            const otherState = prev[other].pinned ? prev[other] : { ...prev[other], open: false, pinned: false };
-            return { ...prev, [side]: { ...current, open: true, pinned: current.pinned }, [other]: otherState };
+            return { ...prev, [side]: { ...current, open: true } };
         });
     }, []);
 

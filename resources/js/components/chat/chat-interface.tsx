@@ -86,7 +86,7 @@ export default function ChatInterface({ conversation, templates }: ChatInterface
     }, []);
 
     const handleSend = useCallback(async (content: string) => {
-        const userMessage: Message = { role: 'user', content };
+        const userMessage: Message = { role: 'user', content, created_at: new Date().toISOString() };
         const updatedMessages = [...messages, userMessage];
         setMessages(updatedMessages);
 

@@ -1,6 +1,17 @@
-import { ArrowUp, Square, Paperclip, X, FileText, Globe } from 'lucide-react';
+import { ArrowUp, Square, Paperclip, X, FileText, Globe, ScrollText, Cpu } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import type { SystemPromptTemplate } from '@/types/chat';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuLabel,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface PendingFile {
     file: File;
@@ -38,6 +49,8 @@ const models = [
     { value: 'gemini-2.0-flash-lite', label: 'Gemini 2.0 Flash Lite', group: 'Google' },
     { value: 'gemini-2.5-pro-preview-06-05', label: 'Gemini 2.5 Pro', group: 'Google' },
 ];
+
+const modelGroups = Object.entries(Object.groupBy(models, m => m.group)) as [string, typeof models][];
 
 export default function MessageInput({
     onSend, onCancel, disabled, isStreaming, model, onModelChange,
@@ -88,6 +101,14 @@ export default function MessageInput({
             onSystemPromptChange(value);
         }
     };
+
+    const activeModel = models.find(m => m.value === model);
+    const hasActiveTemplate = showCustomPrompt || (systemPrompt !== '' && systemPrompt !== undefined);
+
+    // Determine current template radio value
+    const templateRadioValue = showCustomPrompt
+        ? '__custom__'
+        : systemPrompt || '';
 
     return (
         <div className="bg-background">
@@ -145,8 +166,8 @@ export default function MessageInput({
                         </div>
                     )}
 
-                    <div className="flex items-center justify-between gap-2 px-3 pb-2">
-                        <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between gap-1 px-3 pb-2">
+                        <div className="flex items-center gap-1">
                             <input
                                 ref={fileInputRef}
                                 type="file"
@@ -155,75 +176,137 @@ export default function MessageInput({
                                 className="hidden"
                                 onChange={e => { if (e.target.files?.length) onFilesSelected(e.target.files); e.target.value = ''; }}
                             />
-                            <button
-                                type="button"
-                                onClick={() => fileInputRef.current?.click()}
-                                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-muted"
-                                title="Attach files"
-                            >
-                                <Paperclip className="h-4 w-4 text-muted-foreground" />
-                            </button>
 
-                            <button
-                                type="button"
-                                onClick={() => onWebSearchChange(!webSearch)}
-                                className={`flex h-8 shrink-0 items-center gap-1 rounded-lg px-2 text-xs font-medium transition-colors ${
-                                    webSearch
-                                        ? 'bg-[var(--scheme-accent)] text-white'
-                                        : 'hover:bg-muted text-muted-foreground'
-                                }`}
-                                title="Web search (uses Gemini)"
-                            >
-                                <Globe className="h-3.5 w-3.5" />
-                                <span>Search</span>
-                            </button>
+                            {/* Attach files */}
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <button
+                                        type="button"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-muted"
+                                    >
+                                        <Paperclip className="h-4 w-4 text-muted-foreground" />
+                                    </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top">Attach files</TooltipContent>
+                            </Tooltip>
 
-                            <select
-                                value={showCustomPrompt ? '__custom__' : systemPrompt || ''}
-                                onChange={e => handleTemplateChange(e.target.value)}
-                                className="rounded-lg border bg-muted/50 px-2 py-1 text-xs outline-none max-w-[140px]"
-                            >
-                                <option value="">Default prompt</option>
-                                {templates.map(t => (
-                                    <option key={t.id} value={t.prompt}>{t.name}</option>
-                                ))}
-                                <option value="__custom__">Custom...</option>
-                            </select>
-                        </div>
+                            {/* Web search */}
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <button
+                                        type="button"
+                                        onClick={() => onWebSearchChange(!webSearch)}
+                                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                                            webSearch
+                                                ? 'bg-[var(--scheme-accent)] text-white'
+                                                : 'hover:bg-muted text-muted-foreground'
+                                        }`}
+                                    >
+                                        <Globe className="h-4 w-4" />
+                                    </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top">Web search (uses Gemini)</TooltipContent>
+                            </Tooltip>
 
-                        <div className="flex items-center gap-2">
-                            <select
-                                value={model}
-                                onChange={e => onModelChange(e.target.value)}
-                                className="rounded-lg border bg-muted/50 px-2 py-1 text-xs outline-none"
-                            >
-                                {Object.entries(Object.groupBy(models, m => m.group)).map(([group, items]) => (
-                                    <optgroup key={group} label={group}>
-                                        {items!.map(m => (
-                                            <option key={m.value} value={m.value}>{m.label}</option>
+                            {/* System prompt template */}
+                            <DropdownMenu>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <DropdownMenuTrigger asChild>
+                                            <button
+                                                type="button"
+                                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                                                    hasActiveTemplate
+                                                        ? 'bg-[var(--scheme-accent)] text-white'
+                                                        : 'hover:bg-muted text-muted-foreground'
+                                                }`}
+                                            >
+                                                <ScrollText className="h-4 w-4" />
+                                            </button>
+                                        </DropdownMenuTrigger>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top">System prompt</TooltipContent>
+                                </Tooltip>
+                                <DropdownMenuContent side="top" align="start" className="min-w-[180px]">
+                                    <DropdownMenuLabel>System Prompt</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuRadioGroup value={templateRadioValue} onValueChange={handleTemplateChange}>
+                                        <DropdownMenuRadioItem value="">Default prompt</DropdownMenuRadioItem>
+                                        {templates.map(t => (
+                                            <DropdownMenuRadioItem key={t.id} value={t.prompt}>{t.name}</DropdownMenuRadioItem>
                                         ))}
-                                    </optgroup>
-                                ))}
-                            </select>
-                            {isStreaming ? (
-                                <button
-                                    type="button"
-                                    onClick={onCancel}
-                                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-destructive text-destructive-foreground transition-colors hover:bg-destructive/90"
-                                >
-                                    <Square className="h-4 w-4" />
-                                </button>
-                            ) : (
-                                <button
-                                    type="submit"
-                                    disabled={disabled}
-                                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors disabled:opacity-50"
-                                    style={{ backgroundColor: 'var(--scheme-accent)', color: 'white' }}
-                                >
-                                    <ArrowUp className="h-4 w-4" />
-                                </button>
-                            )}
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuRadioItem value="__custom__">Custom...</DropdownMenuRadioItem>
+                                    </DropdownMenuRadioGroup>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+
+                            {/* Model selector */}
+                            <DropdownMenu>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <DropdownMenuTrigger asChild>
+                                            <button
+                                                type="button"
+                                                className="flex h-8 shrink-0 items-center gap-1 rounded-lg px-2 transition-colors hover:bg-muted text-muted-foreground"
+                                            >
+                                                <Cpu className="h-4 w-4" />
+                                                <span className="text-[10px] font-medium max-w-[60px] truncate hidden sm:inline">
+                                                    {activeModel?.label ?? 'Model'}
+                                                </span>
+                                            </button>
+                                        </DropdownMenuTrigger>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top">Model: {activeModel?.label ?? model}</TooltipContent>
+                                </Tooltip>
+                                <DropdownMenuContent side="top" align="start" className="min-w-[200px]">
+                                    <DropdownMenuRadioGroup value={model} onValueChange={onModelChange}>
+                                        {modelGroups.map(([group, items], gi) => (
+                                            <DropdownMenuGroup key={group}>
+                                                {gi > 0 && <DropdownMenuSeparator />}
+                                                <DropdownMenuLabel>{group}</DropdownMenuLabel>
+                                                {items.map(m => (
+                                                    <DropdownMenuRadioItem key={m.value} value={m.value}>
+                                                        {m.label}
+                                                    </DropdownMenuRadioItem>
+                                                ))}
+                                            </DropdownMenuGroup>
+                                        ))}
+                                    </DropdownMenuRadioGroup>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
+
+                        {/* Send / Stop */}
+                        {isStreaming ? (
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <button
+                                        type="button"
+                                        onClick={onCancel}
+                                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-destructive text-destructive-foreground transition-colors hover:bg-destructive/90"
+                                    >
+                                        <Square className="h-4 w-4" />
+                                    </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top">Stop</TooltipContent>
+                            </Tooltip>
+                        ) : (
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <button
+                                        type="submit"
+                                        disabled={disabled}
+                                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors disabled:opacity-50"
+                                        style={{ backgroundColor: 'var(--scheme-accent)', color: 'white' }}
+                                    >
+                                        <ArrowUp className="h-4 w-4" />
+                                    </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top">Send</TooltipContent>
+                            </Tooltip>
+                        )}
                     </div>
                 </form>
             </div>
