@@ -26,6 +26,7 @@ export default function ChatInterface({ conversation, templates }: ChatInterface
     const [systemPrompt, setSystemPrompt] = useState(conversation?.system_prompt ?? '');
     const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
     const [webSearch, setWebSearch] = useState(false);
+    const [streamError, setStreamError] = useState<string | null>(null);
 
     const { data, send, isStreaming, isFetching, cancel } = useStream<{
         messages: { role: string; content: string }[];
@@ -39,6 +40,19 @@ export default function ChatInterface({ conversation, templates }: ChatInterface
         csrfToken: '',
         headers: { 'X-XSRF-TOKEN': getXsrfToken() },
         onResponse: (response) => {
+            setStreamError(null);
+
+            const contentType = response.headers.get('Content-Type') || '';
+            if (!response.ok || contentType.includes('text/html')) {
+                const msg = response.status === 419
+                    ? 'Session expired — please refresh the page.'
+                    : response.status === 401 || response.status === 302
+                      ? 'Authentication expired — please refresh the page.'
+                      : `Request failed (${response.status}) — please refresh the page.`;
+                setStreamError(msg);
+                throw new Error(msg);
+            }
+
             const newId = response.headers.get('X-Conversation-Id');
             if (newId && !conversationId) {
                 const id = parseInt(newId, 10);
@@ -59,13 +73,19 @@ export default function ChatInterface({ conversation, templates }: ChatInterface
     // When streaming finishes, commit the streamed response to the messages array
     useEffect(() => {
         if (!isStreaming && data && data.trim()) {
+            // Don't commit HTML error pages as assistant messages
+            const trimmed = data.trim();
+            if (trimmed.startsWith('<!DOCTYPE') || trimmed.startsWith('<html') || trimmed.startsWith('<script')) {
+                if (!streamError) setStreamError('Session expired — please refresh the page.');
+                return;
+            }
             setMessages(prev => {
                 const last = prev[prev.length - 1];
                 if (last?.role === 'assistant' && last.content === data) return prev;
                 return [...prev, { role: 'assistant', content: data }];
             });
         }
-    }, [isStreaming, data]);
+    }, [isStreaming, data, streamError]);
 
     const handleFilesSelected = useCallback((files: FileList) => {
         const newFiles: PendingFile[] = Array.from(files).map(file => {
@@ -87,6 +107,7 @@ export default function ChatInterface({ conversation, templates }: ChatInterface
     }, []);
 
     const handleSend = useCallback(async (content: string) => {
+        setStreamError(null);
         const userMessage: Message = { role: 'user', content, created_at: new Date().toISOString() };
         const updatedMessages = [...messages, userMessage];
         setMessages(updatedMessages);
@@ -135,7 +156,8 @@ export default function ChatInterface({ conversation, templates }: ChatInterface
         <div className="relative h-full">
             <MessageList
                 messages={messages}
-                streamingContent={isStreaming ? data : undefined}
+                streamingContent={isStreaming && !streamError ? data : undefined}
+                streamError={streamError}
             />
             <div className="absolute bottom-0 left-0 right-0">
                 <div className="pointer-events-none h-8 bg-gradient-to-t from-background to-transparent" />

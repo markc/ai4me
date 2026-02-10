@@ -5,9 +5,10 @@ import MessageBubble from './message-bubble';
 interface MessageListProps {
     messages: Message[];
     streamingContent?: string;
+    streamError?: string | null;
 }
 
-export default function MessageList({ messages, streamingContent }: MessageListProps) {
+export default function MessageList({ messages, streamingContent, streamError }: MessageListProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
     const bottomRef = useRef<HTMLDivElement>(null);
     const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
@@ -75,6 +76,18 @@ export default function MessageList({ messages, streamingContent }: MessageListP
                         message={{ role: 'assistant', content: streamingContent }}
                         isStreaming
                     />
+                )}
+
+                {streamError && (
+                    <div className="mx-auto max-w-md rounded-lg border border-red-300 bg-red-50 p-4 text-center dark:border-red-800 dark:bg-red-950/50">
+                        <p className="text-sm text-red-700 dark:text-red-300">{streamError}</p>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="mt-2 rounded-md bg-red-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-red-700"
+                        >
+                            Refresh page
+                        </button>
+                    </div>
                 )}
 
                 <div ref={bottomRef} />
