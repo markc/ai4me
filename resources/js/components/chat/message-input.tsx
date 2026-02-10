@@ -1,5 +1,5 @@
-import { ArrowUp, Square, Paperclip, X, FileText, Globe, ScrollText, Cpu, Terminal, LoaderCircle } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
+import { ArrowUp, Square, Paperclip, X, FileText, Globe, ScrollText, Cpu, Terminal, LoaderCircle, Search } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import type { SystemPromptTemplate } from '@/types/chat';
 import {
     DropdownMenu,
@@ -73,7 +73,20 @@ export default function MessageInput({
         ...apiModels,
         ...projects.map(p => ({ value: `claude-code:${p}`, label: p, group: 'Claude Code' })),
     ];
-    const modelGroups = Object.entries(Object.groupBy(models, m => m.group)) as [string, typeof models][];
+
+    const [modelSearch, setModelSearch] = useState('');
+    const modelSearchRef = useRef<HTMLInputElement>(null);
+
+    const filteredModels = useMemo(() => {
+        if (!modelSearch) return models;
+        const q = modelSearch.toLowerCase();
+        return models.filter(m => m.label.toLowerCase().includes(q) || m.group.toLowerCase().includes(q));
+    }, [models, modelSearch]);
+
+    const filteredModelGroups = useMemo(
+        () => Object.entries(Object.groupBy(filteredModels, m => m.group)) as [string, typeof models][],
+        [filteredModels],
+    );
 
     useEffect(() => {
         if (!disabled && !isStreaming) {
@@ -278,20 +291,42 @@ export default function MessageInput({
                                     </TooltipTrigger>
                                     <TooltipContent side="top">Model: {activeModel?.label ?? model}</TooltipContent>
                                 </Tooltip>
-                                <DropdownMenuContent side="top" align="start" className="min-w-[200px]">
-                                    <DropdownMenuRadioGroup value={model} onValueChange={onModelChange}>
-                                        {modelGroups.map(([group, items], gi) => (
-                                            <DropdownMenuGroup key={group}>
-                                                {gi > 0 && <DropdownMenuSeparator />}
-                                                <DropdownMenuLabel>{group}</DropdownMenuLabel>
-                                                {items.map(m => (
-                                                    <DropdownMenuRadioItem key={m.value} value={m.value}>
-                                                        {m.label}
-                                                    </DropdownMenuRadioItem>
-                                                ))}
-                                            </DropdownMenuGroup>
-                                        ))}
-                                    </DropdownMenuRadioGroup>
+                                <DropdownMenuContent
+                                    side="top"
+                                    align="start"
+                                    className="min-w-[200px] flex flex-col"
+                                    onCloseAutoFocus={() => setModelSearch('')}
+                                >
+                                    <div className="flex items-center gap-2 px-2 py-1.5 border-b">
+                                        <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                        <input
+                                            ref={modelSearchRef}
+                                            value={modelSearch}
+                                            onChange={e => setModelSearch(e.target.value)}
+                                            onKeyDown={e => e.stopPropagation()}
+                                            placeholder="Search models..."
+                                            className="w-full bg-transparent text-xs outline-none placeholder:text-muted-foreground"
+                                            autoFocus
+                                        />
+                                    </div>
+                                    <div className="max-h-[280px] overflow-y-auto">
+                                        <DropdownMenuRadioGroup value={model} onValueChange={onModelChange}>
+                                            {filteredModelGroups.map(([group, items], gi) => (
+                                                <DropdownMenuGroup key={group}>
+                                                    {gi > 0 && <DropdownMenuSeparator />}
+                                                    <DropdownMenuLabel>{group}</DropdownMenuLabel>
+                                                    {items.map(m => (
+                                                        <DropdownMenuRadioItem key={m.value} value={m.value}>
+                                                            {m.label}
+                                                        </DropdownMenuRadioItem>
+                                                    ))}
+                                                </DropdownMenuGroup>
+                                            ))}
+                                            {filteredModels.length === 0 && (
+                                                <div className="px-2 py-3 text-xs text-muted-foreground text-center">No matches</div>
+                                            )}
+                                        </DropdownMenuRadioGroup>
+                                    </div>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
