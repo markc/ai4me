@@ -78,6 +78,13 @@ class ChatController extends Controller
 
     public function stream(Request $request)
     {
+        \Log::info('ChatController::stream', [
+            'model' => $request->input('model'),
+            'conversation_id' => $request->input('conversation_id'),
+            'message_count' => count($request->input('messages', [])),
+            'user_id' => $request->user()?->id,
+        ]);
+
         $request->validate([
             'messages' => 'required|array',
             'messages.*.role' => 'required|in:user,assistant',

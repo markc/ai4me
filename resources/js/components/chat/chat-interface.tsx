@@ -42,15 +42,8 @@ export default function ChatInterface({ conversation, templates }: ChatInterface
         onResponse: (response) => {
             setStreamError(null);
 
-            const contentType = response.headers.get('Content-Type') || '';
-            if (!response.ok || contentType.includes('text/html')) {
-                const msg = response.status === 419
-                    ? 'Session expired — please refresh the page.'
-                    : response.status === 401 || response.status === 302
-                      ? 'Authentication expired — please refresh the page.'
-                      : `Request failed (${response.status}) — please refresh the page.`;
-                setStreamError(msg);
-                throw new Error(msg);
+            if (response.redirected) {
+                setStreamError('Session expired — please refresh the page.');
             }
 
             const newId = response.headers.get('X-Conversation-Id');
@@ -59,6 +52,15 @@ export default function ChatInterface({ conversation, templates }: ChatInterface
                 setConversationId(id);
                 window.history.replaceState({}, '', `/chat/${id}`);
             }
+        },
+        onError: (error) => {
+            const msg = error?.message || String(error);
+            // Extract readable error from HTML error pages
+            const htmlMatch = msg.match(/<title>(.*?)<\/title>/i);
+            const cleanMsg = htmlMatch
+                ? htmlMatch[1]
+                : msg.replace(/<[^>]*>/g, '').slice(0, 300).trim();
+            setStreamError(cleanMsg || 'Unknown error — check server logs.');
         },
     });
 
@@ -75,8 +77,11 @@ export default function ChatInterface({ conversation, templates }: ChatInterface
         if (!isStreaming && data && data.trim()) {
             // Don't commit HTML error pages as assistant messages
             const trimmed = data.trim();
-            if (trimmed.startsWith('<!DOCTYPE') || trimmed.startsWith('<html') || trimmed.startsWith('<script')) {
-                if (!streamError) setStreamError('Session expired — please refresh the page.');
+            if (trimmed.startsWith('<!DOCTYPE') || trimmed.startsWith('<html')) {
+                if (!streamError) {
+                    const titleMatch = trimmed.match(/<title>(.*?)<\/title>/i);
+                    setStreamError(titleMatch?.[1] || 'Server returned HTML instead of stream — check server logs.');
+                }
                 return;
             }
             setMessages(prev => {
