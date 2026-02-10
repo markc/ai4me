@@ -19,6 +19,7 @@ use Prism\Prism\ValueObjects\Messages\AssistantMessage;
 use Prism\Prism\ValueObjects\Media\Image;
 use Prism\Prism\ValueObjects\Media\Document;
 use Prism\Prism\ValueObjects\ProviderTool;
+use Symfony\Component\Process\Process;
 
 class ChatController extends Controller
 {
@@ -36,6 +37,20 @@ class ChatController extends Controller
             'conversation' => null,
             'templates' => $templates,
         ]);
+    }
+
+    public function projects()
+    {
+        $dir = config('ai.projects_dir');
+        if (!$dir || !is_dir($dir)) {
+            return response()->json([]);
+        }
+
+        $dirs = collect(scandir($dir))
+            ->filter(fn($d) => $d !== '.' && $d !== '..' && is_dir("$dir/$d"))
+            ->values();
+
+        return response()->json($dirs);
     }
 
     public function show(Conversation $conversation)
@@ -73,6 +88,7 @@ class ChatController extends Controller
             'attachment_temp_ids' => 'nullable|array',
             'attachment_temp_ids.*' => 'string',
             'web_search' => 'nullable|boolean',
+            'project_dir' => 'nullable|string|max:255',
         ]);
 
         $user = Auth::user();
@@ -81,6 +97,7 @@ class ChatController extends Controller
         $model = $request->input('model', 'claude-sonnet-4-5-20250929');
         $systemPrompt = $request->input('system_prompt');
         $webSearch = $request->boolean('web_search');
+        $projectDir = $request->input('project_dir');
 
         // Get or create conversation
         if ($conversationId) {
@@ -94,6 +111,7 @@ class ChatController extends Controller
                 'title' => 'Untitled',
                 'model' => $model,
                 'system_prompt' => $systemPrompt,
+                'project_dir' => $projectDir,
             ]);
         }
 
@@ -150,6 +168,34 @@ class ChatController extends Controller
         $effectiveSystemPrompt = $conversation->system_prompt
             ?? $user->setting('default_system_prompt')
             ?? 'You are a helpful AI assistant. Be concise, accurate, and friendly. Format responses with markdown when appropriate.';
+
+        // Claude Code CLI branch — bypass Prism entirely
+        if (str_starts_with($model, 'claude-code:')) {
+            $projectName = substr($model, strlen('claude-code:'));
+            $cliProjectDir = rtrim(config('ai.projects_dir'), '/') . '/' . $projectName;
+
+            if (!is_dir($cliProjectDir)) {
+                return response()->stream(function () {
+                    echo 'Error: Project directory not found.';
+                    ob_flush();
+                    flush();
+                }, 200, [
+                    'Cache-Control' => 'no-cache',
+                    'Content-Type' => 'text/event-stream',
+                    'X-Accel-Buffering' => 'no',
+                    'X-Conversation-Id' => $conversation->id,
+                ]);
+            }
+
+            return response()->stream(function () use ($conversation, $messages, $cliProjectDir, $effectiveSystemPrompt) {
+                $this->streamClaudeCode($conversation, $messages, $cliProjectDir, $effectiveSystemPrompt);
+            }, 200, [
+                'Cache-Control' => 'no-cache',
+                'Content-Type' => 'text/event-stream',
+                'X-Accel-Buffering' => 'no',
+                'X-Conversation-Id' => $conversation->id,
+            ]);
+        }
 
         return response()->stream(function () use ($conversation, $prismMessages, $model, $provider, $effectiveSystemPrompt, $webSearch) {
             $fullResponse = '';
@@ -300,6 +346,90 @@ class ChatController extends Controller
         $conversation->delete();
 
         return redirect()->route('chat.index');
+    }
+
+    private function streamClaudeCode(Conversation $conversation, array $messages, string $projectDir, string $systemPrompt): void
+    {
+        $fullResponse = '';
+
+        try {
+            // Build prompt from the last user message
+            $lastMsg = end($messages);
+            $prompt = $lastMsg['content'] ?? '';
+
+            // Include conversation context if there are prior messages
+            if (count($messages) > 1) {
+                $contextParts = [];
+                foreach (array_slice($messages, 0, -1) as $msg) {
+                    $role = $msg['role'] === 'user' ? 'User' : 'Assistant';
+                    $contextParts[] = "{$role}: {$msg['content']}";
+                }
+                $context = implode("\n\n", $contextParts);
+                $prompt = "Previous conversation:\n{$context}\n\nCurrent request: {$prompt}";
+            }
+
+            $process = new Process(
+                ['claude', '-p', $prompt, '--no-session-persistence', '--output-format', 'text'],
+                $projectDir,
+                null,
+                null,
+                300
+            );
+            $process->start();
+
+            while ($process->isRunning()) {
+                $chunk = $process->getIncrementalOutput();
+                if ($chunk !== '') {
+                    $fullResponse .= $chunk;
+                    echo $chunk;
+                    ob_flush();
+                    flush();
+                }
+                usleep(50000); // 50ms poll
+            }
+
+            // Capture remaining output
+            $chunk = $process->getIncrementalOutput();
+            if ($chunk !== '') {
+                $fullResponse .= $chunk;
+                echo $chunk;
+                ob_flush();
+                flush();
+            }
+
+            if ($process->getExitCode() !== 0) {
+                $stderr = $process->getErrorOutput();
+                if ($stderr && !$fullResponse) {
+                    $fullResponse = "Error: {$stderr}";
+                    echo $fullResponse;
+                    ob_flush();
+                    flush();
+                }
+            }
+        } catch (\Exception $e) {
+            $fullResponse = 'Error: ' . $e->getMessage();
+            echo $fullResponse;
+            ob_flush();
+            flush();
+        }
+
+        // Save assistant response
+        if ($fullResponse) {
+            $conversation->messages()->create([
+                'role' => 'assistant',
+                'content' => $fullResponse,
+                'input_tokens' => null,
+                'output_tokens' => null,
+            ]);
+
+            if ($conversation->title === 'Untitled') {
+                $firstMessage = $conversation->messages()->where('role', 'user')->first();
+                if ($firstMessage) {
+                    $title = str($firstMessage->content)->limit(50)->toString();
+                    $conversation->update(['title' => $title]);
+                }
+            }
+        }
     }
 
     private function providerForModel(string $model): Provider

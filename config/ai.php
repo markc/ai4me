@@ -17,6 +17,8 @@ return [
 
     'default' => 'anthropic',
 
+    'projects_dir' => env('CLAUDE_PROJECTS_DIR', ''),
+
     /*
     |--------------------------------------------------------------------------
     | Model Pricing (per 1M tokens: [input, output])

@@ -34,6 +34,7 @@ export default function ChatInterface({ conversation, templates }: ChatInterface
         system_prompt?: string;
         attachment_temp_ids?: string[];
         web_search?: boolean;
+        project_dir?: string;
     }>('/chat/stream', {
         csrfToken: '',
         headers: { 'X-XSRF-TOKEN': getXsrfToken() },
@@ -116,6 +117,9 @@ export default function ChatInterface({ conversation, templates }: ChatInterface
             setPendingFiles([]);
         }
 
+        // Extract project name from claude-code model for the payload
+        const projectDir = model.startsWith('claude-code:') ? model.split(':')[1] : undefined;
+
         send({
             messages: payload,
             conversation_id: conversationId,
@@ -123,6 +127,7 @@ export default function ChatInterface({ conversation, templates }: ChatInterface
             system_prompt: systemPrompt || undefined,
             attachment_temp_ids: attachmentTempIds.length > 0 ? attachmentTempIds : undefined,
             web_search: webSearch || undefined,
+            project_dir: projectDir,
         });
     }, [messages, conversationId, model, systemPrompt, pendingFiles, webSearch, send]);
 

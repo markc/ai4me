@@ -1,4 +1,4 @@
-import { ArrowUp, Square, Paperclip, X, FileText, Globe, ScrollText, Cpu } from 'lucide-react';
+import { ArrowUp, Square, Paperclip, X, FileText, Globe, ScrollText, Cpu, Terminal } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import type { SystemPromptTemplate } from '@/types/chat';
 import {
@@ -35,7 +35,7 @@ interface MessageInputProps {
     onWebSearchChange: (enabled: boolean) => void;
 }
 
-const models = [
+const apiModels = [
     { value: 'claude-haiku-3-5-20241022', label: 'Haiku 3.5', group: 'Anthropic' },
     { value: 'claude-sonnet-4-5-20250929', label: 'Sonnet 4.5', group: 'Anthropic' },
     { value: 'claude-opus-4-6', label: 'Opus 4.6', group: 'Anthropic' },
@@ -50,8 +50,6 @@ const models = [
     { value: 'gemini-2.5-pro-preview-06-05', label: 'Gemini 2.5 Pro', group: 'Google' },
 ];
 
-const modelGroups = Object.entries(Object.groupBy(models, m => m.group)) as [string, typeof models][];
-
 export default function MessageInput({
     onSend, onCancel, disabled, isStreaming, model, onModelChange,
     systemPrompt, onSystemPromptChange, templates,
@@ -61,6 +59,21 @@ export default function MessageInput({
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [showCustomPrompt, setShowCustomPrompt] = useState(false);
+    const [projects, setProjects] = useState<string[]>([]);
+
+    useEffect(() => {
+        fetch('/chat/projects')
+            .then(r => r.json())
+            .then(setProjects)
+            .catch(() => {});
+    }, []);
+
+    // Build full model list including Claude Code projects
+    const models = [
+        ...apiModels,
+        ...projects.map(p => ({ value: `claude-code:${p}`, label: p, group: 'Claude Code' })),
+    ];
+    const modelGroups = Object.entries(Object.groupBy(models, m => m.group)) as [string, typeof models][];
 
     useEffect(() => {
         if (!disabled && !isStreaming) {
@@ -103,6 +116,7 @@ export default function MessageInput({
     };
 
     const activeModel = models.find(m => m.value === model);
+    const isClaudeCode = model.startsWith('claude-code:');
     const hasActiveTemplate = showCustomPrompt || (systemPrompt !== '' && systemPrompt !== undefined);
 
     // Determine current template radio value
@@ -249,10 +263,14 @@ export default function MessageInput({
                                         <DropdownMenuTrigger asChild>
                                             <button
                                                 type="button"
-                                                className="flex h-8 shrink-0 items-center gap-1 rounded-lg px-2 transition-colors hover:bg-muted text-muted-foreground"
+                                                className={`flex h-8 shrink-0 items-center gap-1 rounded-lg px-2 transition-colors ${
+                                                    isClaudeCode
+                                                        ? 'bg-[var(--scheme-accent)] text-white'
+                                                        : 'hover:bg-muted text-muted-foreground'
+                                                }`}
                                             >
-                                                <Cpu className="h-4 w-4" />
-                                                <span className="text-[10px] font-medium max-w-[60px] truncate hidden sm:inline">
+                                                {isClaudeCode ? <Terminal className="h-4 w-4" /> : <Cpu className="h-4 w-4" />}
+                                                <span className="text-[10px] font-medium max-w-[80px] truncate hidden sm:inline">
                                                     {activeModel?.label ?? 'Model'}
                                                 </span>
                                             </button>

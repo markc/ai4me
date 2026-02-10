@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Conversation extends Model
 {
-    protected $fillable = ['user_id', 'title', 'model', 'system_prompt'];
+    protected $fillable = ['user_id', 'title', 'model', 'system_prompt', 'project_dir'];
 
     // total_cost and total_tokens available as accessors but not auto-appended
     // to avoid N+1 queries on sidebar listings

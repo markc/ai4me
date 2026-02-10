@@ -15,6 +15,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('dashboard/settings', [App\Http\Controllers\DashboardController::class, 'updateSettings'])->name('dashboard.settings');
 
     Route::get('chat', [App\Http\Controllers\ChatController::class, 'index'])->name('chat.index');
+    Route::get('chat/projects', [App\Http\Controllers\ChatController::class, 'projects'])->name('chat.projects');
     Route::post('chat/stream', [App\Http\Controllers\ChatController::class, 'stream'])->name('chat.stream');
     Route::post('chat/upload', [App\Http\Controllers\ChatController::class, 'upload'])->name('chat.upload');
     Route::get('chat/attachment/{attachment}', [App\Http\Controllers\ChatController::class, 'attachment'])->name('chat.attachment');

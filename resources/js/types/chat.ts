@@ -28,6 +28,7 @@ export type Conversation = {
     title: string;
     model: string;
     system_prompt?: string | null;
+    project_dir?: string | null;
     updated_at: string;
 };
 
