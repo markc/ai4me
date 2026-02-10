@@ -1,4 +1,4 @@
-import { ArrowUp, Square, Paperclip, X, FileText, Globe, ScrollText, Cpu, Terminal } from 'lucide-react';
+import { ArrowUp, Square, Paperclip, X, FileText, Globe, ScrollText, Cpu, Terminal, LoaderCircle } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import type { SystemPromptTemplate } from '@/types/chat';
 import {
@@ -296,7 +296,7 @@ export default function MessageInput({
                             </DropdownMenu>
                         </div>
 
-                        {/* Send / Stop */}
+                        {/* Send / Working / Stop */}
                         {isStreaming ? (
                             <Tooltip>
                                 <TooltipTrigger asChild>
@@ -310,13 +310,26 @@ export default function MessageInput({
                                 </TooltipTrigger>
                                 <TooltipContent side="top">Stop</TooltipContent>
                             </Tooltip>
+                        ) : disabled ? (
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <button
+                                        type="button"
+                                        disabled
+                                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors"
+                                        style={{ backgroundColor: 'var(--scheme-accent)', color: 'white' }}
+                                    >
+                                        <LoaderCircle className="h-4 w-4 animate-spin" />
+                                    </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top">Working...</TooltipContent>
+                            </Tooltip>
                         ) : (
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <button
                                         type="submit"
-                                        disabled={disabled}
-                                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors disabled:opacity-50"
+                                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors"
                                         style={{ backgroundColor: 'var(--scheme-accent)', color: 'white' }}
                                     >
                                         <ArrowUp className="h-4 w-4" />

@@ -368,10 +368,22 @@ class ChatController extends Controller
                 $prompt = "Previous conversation:\n{$context}\n\nCurrent request: {$prompt}";
             }
 
+            $home = getenv('HOME') ?: '/home/' . get_current_user();
+
             $process = new Process(
-                ['claude', '-p', $prompt, '--no-session-persistence', '--output-format', 'text', '--dangerously-skip-permissions'],
+                [
+                    'claude', '-p', $prompt,
+                    '--no-session-persistence',
+                    '--output-format', 'text',
+                    '--dangerously-skip-permissions',
+                    '--add-dir', "$home/.ssh",
+                    '--add-dir', "$home/.ns",
+                ],
                 $projectDir,
-                null,
+                array_merge(getenv(), [
+                    'HOME' => $home,
+                    'SSH_AUTH_SOCK' => getenv('SSH_AUTH_SOCK') ?: '',
+                ]),
                 null,
                 300
             );
