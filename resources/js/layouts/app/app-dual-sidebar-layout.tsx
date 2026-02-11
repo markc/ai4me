@@ -49,11 +49,10 @@ function LayoutContent({ children }: { children: ReactNode }) {
             <LeftSidebar />
             <RightSidebar />
 
-            {/* TopNav — full width, viewport-centered title, only on scrollable pages */}
-            {!noPadding && <TopNav />}
+            <TopNav />
 
             <div
-                className={`sidebar-slide ${noPadding ? 'h-screen overflow-hidden' : 'min-h-screen'}`}
+                className={`sidebar-slide ${noPadding ? 'h-[calc(100vh-var(--topnav-height))] overflow-hidden' : 'min-h-screen'}`}
                 style={{
                     marginInlineStart: left.pinned ? 'var(--sidebar-width)' : undefined,
                     marginInlineEnd: right.pinned ? 'var(--sidebar-width)' : undefined,
