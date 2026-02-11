@@ -1,3 +1,4 @@
+import { usePage } from '@inertiajs/react';
 import { Menu } from 'lucide-react';
 import { useEffect, type ReactNode } from 'react';
 import Sidebar from '@/components/sidebar';
@@ -72,7 +73,7 @@ function LayoutContent({ children }: { children: ReactNode }) {
                     marginInlineEnd: right.pinned ? 'var(--sidebar-width)' : undefined,
                 }}
             >
-                <main className={noPadding ? '' : 'px-2 py-4 sm:p-4'}>
+                <main key={usePage().url} className={`page-fade-in ${noPadding ? '' : 'px-2 py-4 sm:p-4'}`}>
                     {children}
                 </main>
             </div>
