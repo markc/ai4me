@@ -58,6 +58,23 @@ Key files: `panel-carousel.tsx`, `components/panels/`, `theme-context.tsx`
 - Theme state managed via ThemeContext + localStorage
 - Docs in `docs/` (standalone SPA, GitHub Pages compatible)
 
+## TODO
+
+### Quick wins
+- [ ] Conversation search/filter in sidebar panel (currently shows latest 50, no way to find older ones)
+- [ ] Message editing/deletion (no way to edit or remove individual messages)
+- [ ] Conversation renaming (edit title inline from sidebar)
+
+### Medium effort
+- [ ] Usage charts on dashboard (trend lines for tokens/cost over time)
+- [ ] Conversation folders/tags (organize beyond a flat list)
+- [ ] User roles (admin vs regular user permissions)
+
+### Bigger features
+- [ ] Conversation branching (fork from an earlier message)
+- [ ] Message pagination (currently loads all messages; will slow down for long conversations)
+- [ ] API key management (per-user provider keys instead of env-only)
+
 ## Documentation
 
 See `docs/` for full DCS pattern documentation. Viewable at `/ai4me/docs/` via the unified dev server or GitHub Pages.
