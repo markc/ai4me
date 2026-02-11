@@ -77,18 +77,26 @@ export default function PanelCarousel({ panels, activePanel, onPanelChange, side
                     className="flex h-full transition-transform duration-300 ease-in-out"
                     style={{ transform: `translateX(-${activePanel * 100}%)` }}
                 >
-                    {panels.map((p) => (
+                    {panels.map((p) => {
+                        // Split "L1: Navigation" → display "Navigation", tooltip "L1: Navigation"
+                        const displayName = p.label.replace(/^[LR]\d+:\s*/, '');
+                        return (
                         <div key={p.label} className="flex h-full w-full shrink-0 flex-col">
-                            <div className="shrink-0 border-b px-4 py-2" style={{ borderColor: 'var(--glass-border)' }}>
-                                <h2 className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--scheme-fg-muted)' }}>
-                                    {p.label}
+                            <div
+                                className="shrink-0 border-b px-4 py-2 text-center"
+                                style={{ borderColor: 'var(--glass-border)', background: 'color-mix(in oklch, var(--scheme-accent) 4%, transparent)' }}
+                                title={p.label}
+                            >
+                                <h2 className="text-sm font-bold" style={{ color: 'var(--scheme-fg-primary)' }}>
+                                    {displayName}
                                 </h2>
                             </div>
                             <div className="flex-1 overflow-y-auto">
                                 {p.content}
                             </div>
                         </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
         </>
