@@ -52,13 +52,13 @@ function LayoutContent({ children }: { children: ReactNode }) {
             <TopNav />
 
             <div
-                className={`sidebar-slide ${noPadding ? 'h-[calc(100vh-var(--topnav-height))] overflow-hidden' : 'min-h-screen'}`}
+                className={`sidebar-slide ${noPadding ? '' : 'min-h-screen'}`}
                 style={{
                     marginInlineStart: left.pinned ? 'var(--sidebar-width)' : undefined,
                     marginInlineEnd: right.pinned ? 'var(--sidebar-width)' : undefined,
                 }}
             >
-                <main className={noPadding ? 'h-full' : 'px-2 py-4 sm:p-4'}>
+                <main className={noPadding ? '' : 'px-2 py-4 sm:p-4'}>
                     {children}
                 </main>
             </div>

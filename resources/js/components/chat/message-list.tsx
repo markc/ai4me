@@ -9,25 +9,15 @@ interface MessageListProps {
 }
 
 export default function MessageList({ messages, streamingContent, streamError }: MessageListProps) {
-    const scrollRef = useRef<HTMLDivElement>(null);
     const bottomRef = useRef<HTMLDivElement>(null);
     const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
     const userScrolledRef = useRef(false);
 
     const isNearBottom = useCallback(() => {
-        const el = scrollRef.current;
-        if (!el) return true;
-        return el.scrollHeight - el.scrollTop - el.clientHeight <= 80;
+        return document.documentElement.scrollHeight - window.scrollY - window.innerHeight <= 80;
     }, []);
 
-    const handleScroll = useCallback(() => {
-        // Only disable auto-scroll if user explicitly scrolled up during streaming
-        if (userScrolledRef.current) {
-            setShouldAutoScroll(isNearBottom());
-        }
-    }, [isNearBottom]);
-
-    // Re-enable auto-scroll when user sends a new message (messages.length changes)
+    // Re-enable auto-scroll when user sends a new message
     useEffect(() => {
         setShouldAutoScroll(true);
         userScrolledRef.current = false;
@@ -40,27 +30,29 @@ export default function MessageList({ messages, streamingContent, streamError }:
         }
     }, [messages.length, streamingContent, shouldAutoScroll]);
 
-    // Track user-initiated scrolls (distinguish from programmatic scrolls)
+    // Track user-initiated scrolls
     useEffect(() => {
-        const el = scrollRef.current;
-        if (!el) return;
-
         const onWheel = () => { userScrolledRef.current = true; };
         const onTouchMove = () => { userScrolledRef.current = true; };
-
-        el.addEventListener('scroll', handleScroll);
-        el.addEventListener('wheel', onWheel);
-        el.addEventListener('touchmove', onTouchMove);
-        return () => {
-            el.removeEventListener('scroll', handleScroll);
-            el.removeEventListener('wheel', onWheel);
-            el.removeEventListener('touchmove', onTouchMove);
+        const onScroll = () => {
+            if (userScrolledRef.current) {
+                setShouldAutoScroll(isNearBottom());
+            }
         };
-    }, [handleScroll]);
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('wheel', onWheel, { passive: true });
+        window.addEventListener('touchmove', onTouchMove, { passive: true });
+        return () => {
+            window.removeEventListener('scroll', onScroll);
+            window.removeEventListener('wheel', onWheel);
+            window.removeEventListener('touchmove', onTouchMove);
+        };
+    }, [isNearBottom]);
 
     return (
-        <div ref={scrollRef} className="h-full overflow-y-auto">
-            <div className="mx-auto max-w-3xl space-y-6 p-4 pb-40">
+        <div className="flex-1">
+            <div className="mx-auto max-w-3xl space-y-6 p-4">
                 {messages.length === 0 && !streamingContent && (
                     <p className="text-muted-foreground mt-16 text-center text-lg">
                         Start a conversation

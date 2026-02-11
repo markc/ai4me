@@ -158,13 +158,13 @@ export default function ChatInterface({ conversation, templates }: ChatInterface
     }, [messages, conversationId, model, systemPrompt, pendingFiles, webSearch, send]);
 
     return (
-        <div className="relative h-full">
+        <div className="flex min-h-[calc(100vh-var(--topnav-height))] flex-col">
             <MessageList
                 messages={messages}
                 streamingContent={isStreaming && !streamError ? data : undefined}
                 streamError={streamError}
             />
-            <div className="absolute bottom-0 left-0 right-0">
+            <div className="sticky bottom-0">
                 <div className="pointer-events-none h-8 bg-gradient-to-t from-background to-transparent" />
                 <MessageInput
                     onSend={handleSend}

@@ -24,7 +24,7 @@ export default function ChatPage() {
     return (
         <>
             <Head title={title} />
-            <div className="h-full">
+            <div>
                 <ChatInterface
                     key={conversation?.id ?? 'new'}
                     conversation={conversation}
