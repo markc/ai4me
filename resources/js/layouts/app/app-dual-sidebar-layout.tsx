@@ -53,7 +53,7 @@ function LayoutContent({ children }: { children: ReactNode }) {
             {!noPadding && <TopNav />}
 
             <div
-                className={`sidebar-slide ${noPadding ? 'h-screen overflow-hidden' : ''}`}
+                className={`sidebar-slide ${noPadding ? 'h-screen overflow-hidden' : 'min-h-screen'}`}
                 style={{
                     marginInlineStart: left.pinned ? 'var(--sidebar-width)' : undefined,
                     marginInlineEnd: right.pinned ? 'var(--sidebar-width)' : undefined,

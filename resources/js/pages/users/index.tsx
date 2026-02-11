@@ -1,8 +1,10 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/data-table/data-table';
-import { columns, type User } from './columns';
+import { createColumns, type User } from './columns';
+import UserFormModal from './user-form-modal';
 
 type UsersPageProps = {
     users: User[];
@@ -10,6 +12,30 @@ type UsersPageProps = {
 
 export default function UsersPage() {
     const { users } = usePage<{ props: UsersPageProps }>().props as unknown as UsersPageProps;
+
+    const [modalOpen, setModalOpen] = useState(false);
+    const [editingUser, setEditingUser] = useState<User | null>(null);
+
+    const columns = useMemo(
+        () =>
+            createColumns({
+                onEdit: (user) => {
+                    setEditingUser(user);
+                    setModalOpen(true);
+                },
+                onDelete: (user) => {
+                    if (confirm(`Delete user "${user.name}"?`)) {
+                        router.delete(`/users/${user.id}`, { preserveScroll: true });
+                    }
+                },
+            }),
+        [],
+    );
+
+    function closeModal() {
+        setModalOpen(false);
+        setEditingUser(null);
+    }
 
     return (
         <>
@@ -22,15 +48,21 @@ export default function UsersPage() {
                     searchKey="name"
                     searchPlaceholder="Search by name..."
                     actionSlot={
-                        <Button size="sm" className="h-8" asChild>
-                            <Link href="/users/create">
-                                <Plus className="mr-1.5 size-4" />
-                                Add User
-                            </Link>
+                        <Button
+                            size="sm"
+                            className="h-8"
+                            onClick={() => {
+                                setEditingUser(null);
+                                setModalOpen(true);
+                            }}
+                        >
+                            <Plus className="mr-0.5 size-4" />
+                            Add User
                         </Button>
                     }
                 />
             </div>
+            <UserFormModal open={modalOpen} onClose={closeModal} user={editingUser} />
         </>
     );
 }
