@@ -215,6 +215,9 @@ html.dark {
     top: 0;
     height: 100vh;
     height: 100dvh;
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
 }
 .sidebar-left { border-inline-end: 1px solid transparent; }
 .sidebar-right { border-inline-start: 1px solid transparent; }

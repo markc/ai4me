@@ -80,7 +80,11 @@ async function loadDoc(path) {
     try {
         const res = await fetch(path);
         if (!res.ok) throw new Error(`Failed to load ${path}`);
+        content.classList.remove('animate-fade-in');
         content.innerHTML = md(await res.text());
+        // Force reflow to restart animation
+        void content.offsetWidth;
+        content.classList.add('animate-fade-in');
         document.querySelectorAll('[data-path]').forEach(a => a.classList.toggle('active', a.dataset.path === path));
         history.pushState({path}, '', `#${path}`);
         // Build TOC from rendered headings
