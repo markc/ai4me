@@ -1,12 +1,12 @@
 import { Pin, PinOff } from 'lucide-react';
 import PanelCarousel from '@/components/panel-carousel';
-import ThemePanel from '@/components/panels/theme-panel';
-import UsagePanel from '@/components/panels/usage-panel';
+import ThemePanel from '@/components/panels/r1-theme-panel';
+import UsagePanel from '@/components/panels/r2-usage-panel';
 import { useTheme } from '@/contexts/theme-context';
 
 const panels = [
-    { label: 'Theme', content: <ThemePanel /> },
-    { label: 'Usage', content: <UsagePanel /> },
+    { label: 'R1: Theme', content: <ThemePanel /> },
+    { label: 'R2: Usage', content: <UsagePanel /> },
 ];
 
 export default function RightSidebar() {

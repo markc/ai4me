@@ -13,9 +13,6 @@ export default function DocsPanel() {
 
     return (
         <div className="flex h-full flex-col">
-            <div className="border-b p-3" style={{ borderColor: 'var(--glass-border)' }}>
-                <span className="text-sm font-medium" style={{ color: 'var(--scheme-fg-muted)' }}>Documentation</span>
-            </div>
             <div className="flex-1 overflow-y-auto">
                 {docs.length === 0 && (
                     <p className="p-3 text-center text-xs" style={{ color: 'var(--scheme-fg-muted)' }}>

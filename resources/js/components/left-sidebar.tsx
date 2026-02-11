@@ -1,14 +1,14 @@
 import { Pin, PinOff } from 'lucide-react';
 import PanelCarousel from '@/components/panel-carousel';
-import ConversationsPanel from '@/components/panels/conversations-panel';
-import DocsPanel from '@/components/panels/docs-panel';
-import NavPanel from '@/components/panels/nav-panel';
+import NavPanel from '@/components/panels/l1-nav-panel';
+import ConversationsPanel from '@/components/panels/l2-conversations-panel';
+import DocsPanel from '@/components/panels/l3-docs-panel';
 import { useTheme } from '@/contexts/theme-context';
 
 const panels = [
-    { label: 'Navigation', content: <NavPanel /> },
-    { label: 'Conversations', content: <ConversationsPanel /> },
-    { label: 'Docs', content: <DocsPanel /> },
+    { label: 'L1: Navigation', content: <NavPanel /> },
+    { label: 'L2: Conversations', content: <ConversationsPanel /> },
+    { label: 'L3: Docs', content: <DocsPanel /> },
 ];
 
 export default function LeftSidebar() {

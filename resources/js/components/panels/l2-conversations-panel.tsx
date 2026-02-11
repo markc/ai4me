@@ -22,19 +22,8 @@ export default function ConversationsPanel() {
 
     return (
         <div className="flex h-full flex-col">
-            <div className="flex items-center justify-between border-b p-3" style={{ borderColor: 'var(--glass-border)' }}>
-                <span className="text-sm font-medium" style={{ color: 'var(--scheme-fg-muted)' }}>Conversations</span>
-                <Link
-                    href="/chat"
-                    className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors hover:bg-background"
-                    style={{ color: 'var(--scheme-fg-muted)' }}
-                >
-                    <Plus className="h-4 w-4" />
-                </Link>
-            </div>
-
-            <div className="px-3 py-2">
-                <div className="relative">
+            <div className="flex items-center gap-2 px-3 py-2">
+                <div className="relative flex-1">
                     <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2" style={{ color: 'var(--scheme-fg-muted)' }} />
                     <input
                         type="text"
@@ -44,6 +33,13 @@ export default function ConversationsPanel() {
                         className="w-full rounded-lg border bg-transparent py-1.5 pl-8 pr-3 text-xs outline-none placeholder:text-muted-foreground focus:border-[var(--scheme-accent)]"
                     />
                 </div>
+                <Link
+                    href="/chat"
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-background"
+                    style={{ color: 'var(--scheme-fg-muted)' }}
+                >
+                    <Plus className="h-4 w-4" />
+                </Link>
             </div>
 
             <div className="flex-1 overflow-y-auto">
