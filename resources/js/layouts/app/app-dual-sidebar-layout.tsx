@@ -1,9 +1,23 @@
 import { Menu } from 'lucide-react';
 import { useEffect, type ReactNode } from 'react';
-import LeftSidebar from '@/components/left-sidebar';
-import RightSidebar from '@/components/right-sidebar';
+import Sidebar from '@/components/sidebar';
+import NavPanel from '@/components/panels/l1-nav-panel';
+import ConversationsPanel from '@/components/panels/l2-conversations-panel';
+import DocsPanel from '@/components/panels/l3-docs-panel';
+import ThemePanel from '@/components/panels/r1-theme-panel';
+import UsagePanel from '@/components/panels/r2-usage-panel';
 import TopNav from '@/components/top-nav';
 import { ThemeProvider, useTheme } from '@/contexts/theme-context';
+
+const leftPanels = [
+    { label: 'L1: Navigation', content: <NavPanel /> },
+    { label: 'L2: Conversations', content: <ConversationsPanel /> },
+    { label: 'L3: Docs', content: <DocsPanel /> },
+];
+const rightPanels = [
+    { label: 'R1: Theme', content: <ThemePanel /> },
+    { label: 'R2: Usage', content: <UsagePanel /> },
+];
 
 function LayoutContent({ children }: { children: ReactNode }) {
     const { left, right, noPadding, toggleSidebar } = useTheme();
@@ -46,8 +60,8 @@ function LayoutContent({ children }: { children: ReactNode }) {
                 <Menu className="h-5 w-5" />
             </button>
 
-            <LeftSidebar />
-            <RightSidebar />
+            <Sidebar side="left" panels={leftPanels} />
+            <Sidebar side="right" panels={rightPanels} />
 
             <TopNav />
 
