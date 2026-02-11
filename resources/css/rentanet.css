@@ -164,7 +164,8 @@
 
 /* Sidebar transitions (Tailwind v4 uses translate property, not transform) */
 .sidebar-slide {
-    transition: translate 300ms cubic-bezier(0.33, 1, 0.68, 1);
+    transition: translate 300ms cubic-bezier(0.33, 1, 0.68, 1),
+                margin 300ms cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 /* Scroll-reactive sidebar borders: visible below topnav area, full height on scroll */
