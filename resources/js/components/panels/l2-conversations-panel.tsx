@@ -35,7 +35,8 @@ export default function ConversationsPanel() {
                 </div>
                 <Link
                     href="/chat"
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-green-600 text-white transition-colors hover:bg-green-700"
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white transition-opacity hover:opacity-80"
+                    style={{ backgroundColor: 'var(--scheme-accent)' }}
                 >
                     <Plus className="h-4 w-4" />
                 </Link>

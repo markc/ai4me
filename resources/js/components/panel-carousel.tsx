@@ -78,13 +78,15 @@ export default function PanelCarousel({ panels, activePanel, onPanelChange, side
                     style={{ transform: `translateX(-${activePanel * 100}%)` }}
                 >
                     {panels.map((p) => (
-                        <div key={p.label} className="h-full w-full shrink-0 overflow-y-auto">
-                            <div className="border-b px-4 py-2" style={{ borderColor: 'var(--glass-border)' }}>
+                        <div key={p.label} className="flex h-full w-full shrink-0 flex-col">
+                            <div className="shrink-0 border-b px-4 py-2" style={{ borderColor: 'var(--glass-border)' }}>
                                 <h2 className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--scheme-fg-muted)' }}>
                                     {p.label}
                                 </h2>
                             </div>
-                            {p.content}
+                            <div className="flex-1 overflow-y-auto">
+                                {p.content}
+                            </div>
                         </div>
                     ))}
                 </div>
