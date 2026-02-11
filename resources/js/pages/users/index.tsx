@@ -56,7 +56,7 @@ export default function UsersPage() {
                                 setModalOpen(true);
                             }}
                         >
-                            <Plus className="mr-0.5 size-4" />
+                            <Plus className="size-4" />
                             Add User
                         </Button>
                     }
