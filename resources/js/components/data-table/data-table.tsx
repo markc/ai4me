@@ -9,6 +9,7 @@ import {
     getSortedRowModel,
     useReactTable,
 } from '@tanstack/react-table';
+import type { ReactNode } from 'react';
 import { useState } from 'react';
 import {
     Table,
@@ -26,6 +27,7 @@ interface DataTableProps<TData, TValue> {
     data: TData[];
     searchKey?: string;
     searchPlaceholder?: string;
+    actionSlot?: ReactNode;
 }
 
 export function DataTable<TData, TValue>({
@@ -33,6 +35,7 @@ export function DataTable<TData, TValue>({
     data,
     searchKey,
     searchPlaceholder,
+    actionSlot,
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -55,6 +58,7 @@ export function DataTable<TData, TValue>({
                 table={table}
                 searchKey={searchKey}
                 searchPlaceholder={searchPlaceholder}
+                actionSlot={actionSlot}
             />
             <div className="rounded-md border">
                 <Table>

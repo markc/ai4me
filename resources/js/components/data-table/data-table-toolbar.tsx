@@ -1,4 +1,5 @@
 import type { Table } from '@tanstack/react-table';
+import type { ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,12 +8,14 @@ interface DataTableToolbarProps<TData> {
     table: Table<TData>;
     searchKey?: string;
     searchPlaceholder?: string;
+    actionSlot?: ReactNode;
 }
 
 export function DataTableToolbar<TData>({
     table,
     searchKey,
     searchPlaceholder,
+    actionSlot,
 }: DataTableToolbarProps<TData>) {
     const isFiltered = table.getState().columnFilters.length > 0;
     const searchColumn = searchKey ? table.getColumn(searchKey) : null;
@@ -40,6 +43,7 @@ export function DataTableToolbar<TData>({
                     </Button>
                 )}
             </div>
+            {actionSlot}
         </div>
     );
 }
